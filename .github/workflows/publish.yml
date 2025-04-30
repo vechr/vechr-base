@@ -59,6 +59,12 @@ jobs:
         yarn add -D semantic-release @semantic-release/github @semantic-release/npm @semantic-release/commit-analyzer @semantic-release/release-notes-generator rimraf
         yarn global add @nestjs/cli
 
+    - name: Create .npmrc
+      run: |
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > .npmrc
+        echo "@vechr:registry=https://npm.pkg.github.com" >> .npmrc
+        echo "always-auth=true" >> .npmrc
+
     - name: Release
       run: yarn semantic-release
       env:
@@ -74,6 +80,7 @@ jobs:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NODE_ENV: production
         PATH: ${{ github.workspace }}/node_modules/.bin:$PATH
+        NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc
 
     - name: Verify Package
       run: |
