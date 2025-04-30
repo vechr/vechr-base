@@ -13,11 +13,11 @@ import {
   HealthCheckResult,
 } from '@nestjs/terminus';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import PrismaService from '../data-services/prisma/prisma.service';
+import { PrismaService } from '../data-services/prisma/prisma.service';
 
 @ApiTags('Health')
 @Controller()
-export default class HealthController {
+export class HealthController {
   constructor(
     private health: HealthCheckService,
     private prismaHealth: PrismaHealthIndicator,

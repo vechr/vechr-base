@@ -11,7 +11,7 @@ import {
   IListCursorResult,
   IListPaginationResult,
 } from '../entities';
-import PrismaService from '../../frameworks/data-services/prisma/prisma.service';
+import { PrismaService } from '../../frameworks/data-services/prisma/prisma.service';
 import { BaseRepository } from '../../data/base.repository';
 import { Prisma } from '@prisma/client';
 import { Audit, AuditList } from '../entities/audit.entity';

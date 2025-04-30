@@ -22,7 +22,7 @@ import appConfig from './config/app.config';
 // import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 // diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
-const otelSDK = new NodeSDK({
+export const otelSDK = new NodeSDK({
   serviceName: appConfig.app.name,
   metricReader: new PrometheusExporter({
     port: 8081,
@@ -51,5 +51,3 @@ const otelSDK = new NodeSDK({
     new WinstonInstrumentation(),
   ],
 });
-
-export default otelSDK;
