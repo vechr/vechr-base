@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Node.js Package
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 env:
-  SERVICE_NAME: things-service
+  NODE_ENV: production
 
 jobs:
   test-build:
@@ -16,70 +16,126 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-latest']
-        node-version: [20.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [22.x]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
-    - run: yarn install --frozen-lockfile
-    - run: yarn prisma:sync
-    - run: yarn build
+        registry-url: 'https://npm.pkg.github.com'
+        scope: '@vechr'
+
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          **/node_modules
+          ${{ github.workspace }}/.yarn-cache
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile --prefer-offline
+
+    - name: Run linting
+      run: yarn lint
+
+    - name: Run tests
+      run: yarn test
+      env:
+        NODE_ENV: test
+
+    - name: Build package
+      run: |
+        yarn prisma:sync
+        yarn build
+      env:
+        NODE_ENV: production
 
   release:    
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/master' }}
     needs: [ test-build ]
+    permissions:
+      contents: write
+      packages: write
+      issues: write
+      pull-requests: write
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
       with:
-        node-version: 20.x
+        fetch-depth: 0
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
         cache: 'yarn'
-    - run: yarn install --frozen-lockfile
-    - run: yarn semantic-release
+        registry-url: 'https://npm.pkg.github.com'
+        scope: '@vechr'
+
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile --prefer-offline
+
+    - name: Release
+      run: yarn semantic-release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
   publish:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/master' }}
     needs: [ test-build, release ]
-    
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-    - uses: actions/checkout@v3
-    - 
-      id: release-service
-      name: Get Latest Release
-      uses: pozetroninc/github-action-get-latest-release@v0.8.0
+    - uses: actions/checkout@v4
       with:
-        repository: ${{ github.repository }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
 
-    - name: Install the gcloud CLI
-      uses: google-github-actions/setup-gcloud@v0
+    - name: Use Node.js
+      uses: actions/setup-node@v4
       with:
-        project_id: ${{ secrets.GOOGLE_PROJECT }}
-        service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-        export_default_credentials: true
+        node-version: 22.x
+        cache: 'yarn'
+        registry-url: 'https://npm.pkg.github.com'
+        scope: '@vechr'
 
-    - name: Build and Push the docker image
-      env:
-        GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          **/node_modules
+          ${{ github.workspace }}/.yarn-cache
+        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile --prefer-offline
+
+    - name: Build and Publish Package
       run: |
-        gcloud auth configure-docker asia-southeast2-docker.pkg.dev --quiet
-        DOCKER_BUILDKIT=1 docker build -f ./docker/Dockerfile.prod -t asia-southeast2-docker.pkg.dev/$GOOGLE_PROJECT/vechr-iiot-repository/$SERVICE_NAME:latest -t asia-southeast2-docker.pkg.dev/$GOOGLE_PROJECT/vechr-iiot-repository/$SERVICE_NAME:${{ steps.release-service.outputs.release }} .
-        docker push --all-tags asia-southeast2-docker.pkg.dev/$GOOGLE_PROJECT/vechr-iiot-repository/$SERVICE_NAME
-
-    - 
-      name: Discord notification
+        yarn prisma:sync
+        yarn build
+        yarn publish --access public --no-git-tag-version
       env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      uses: Ilshidur/action-discord@master
-      with:
-        args: 'Project {{ EVENT_PAYLOAD.repository.full_name }} generate container successfully!. Try command ` docker pull asia-southeast2-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/vechr-iiot-repository/${{ env.SERVICE_NAME }}:latest ` to pull the lastest image.'
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NODE_ENV: production
+
+    - name: Verify Package
+      run: |
+        yarn cache clean
+        yarn add @vechr/vechr-base@latest
+        yarn list --pattern @vechr/vechr-base

@@ -1,18 +1,26 @@
 {
-  "name": "things-service",
+  "name": "@vechr/vechr-base",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
+  "description": "Vechr Base Package - A NestJS-based foundation for building scalable applications",
+  "author": "Vechr Team",
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "release": {
     "branches": [
       "master"
     ]
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "commit": "cz",
-    "build": "rm -rf .build && nest build",
+    "build": "rm -rf dist && nest build",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "npx eslint \"src/**/*.ts\"",
     "lint:fix": "yarn lint --fix",
@@ -25,8 +33,9 @@
     "prepare": "husky",
     "prisma:prod:deploy": "prisma migrate deploy --schema './database/schema.prisma'",
     "prestart:prod": "npm run prisma:prod:deploy",
-    "start:prod": "node .build/server",
-    "semantic-release": "semantic-release"
+    "start:prod": "node dist/server",
+    "semantic-release": "semantic-release",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@keyv/redis": "^4.3.4",

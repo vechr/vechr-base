@@ -23,13 +23,13 @@ import appConfig from './config/app.config';
 // diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 const otelSDK = new NodeSDK({
-  serviceName: appConfig.APP_NAME,
+  serviceName: appConfig.app.name,
   metricReader: new PrometheusExporter({
     port: 8081,
   }),
   spanProcessor: new BatchSpanProcessor(
     new OTLPTraceExporter({
-      url: appConfig.OTLP_HTTP_URL,
+      url: appConfig.tracing.otlpHttpUrl,
     }),
   ),
   contextManager: new AsyncLocalStorageContextManager(),
