@@ -1,6 +1,6 @@
 {
   "name": "@vechr/vechr-base",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Vechr Base Package - A NestJS-based foundation for building scalable applications",
   "author": "Vechr Team",
   "private": false,
