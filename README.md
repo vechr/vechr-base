@@ -113,20 +113,3 @@ export class AppModule {}
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-// 3. Use configuration in services
-@Injectable()
-export class AppService {
-  private readonly config = VechrBaseModuleConfig.getConfig();
-
-  getAppInfo() {
-    return {
-      name: this.config.app?.name,
-      port: this.config.app?.port,
-      features: {
-        notifications: (this.config as any).features?.enableNotifications,
-        maxRetries: (this.config as any).features?.maxRetries,
-      },
-    };
-  }
-}
