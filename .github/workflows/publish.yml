@@ -38,6 +38,11 @@ jobs:
         registry-url: 'https://npm.pkg.github.com'
         scope: '@vechr'
 
+    - name: Install Yarn
+      run: |
+        npm install -g yarn
+        yarn --version
+
     - name: Cache dependencies
       uses: actions/cache@v4
       with:
