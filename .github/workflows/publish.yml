@@ -55,8 +55,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        yarn install --frozen-lockfile --prefer-offline
-        yarn add -D semantic-release @semantic-release/github @semantic-release/npm @semantic-release/commit-analyzer @semantic-release/release-notes-generator
+        yarn install --frozen-lockfile --prefer-offline --ignore-scripts
+        yarn add -D semantic-release @semantic-release/github @semantic-release/npm @semantic-release/commit-analyzer @semantic-release/release-notes-generator rimraf
         yarn global add @nestjs/cli
 
     - name: Release
