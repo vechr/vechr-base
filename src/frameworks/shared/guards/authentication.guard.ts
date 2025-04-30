@@ -5,7 +5,7 @@ import {
   ExtendedForbiddenException,
   ExtendedUnauthorizedException,
 } from '../exceptions/common.exception';
-import log from '../utils/log.util';
+import { log } from '../utils/log.util';
 import { TCompactAuthUser } from '@/domain';
 
 enum EErrorJwtCode {

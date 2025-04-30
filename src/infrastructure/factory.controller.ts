@@ -18,14 +18,14 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { BaseUseCase } from '../domain/usecase/base.usecase';
-import Authentication from '../frameworks/shared/decorators/authentication.decorator';
-import Authorization from '../frameworks/shared/decorators/authorization.decorator';
-import Context from '../frameworks/shared/decorators/context.decorator';
+import { Authentication } from '../frameworks/shared/decorators/authentication.decorator';
+import { Authorization } from '../frameworks/shared/decorators/authorization.decorator';
+import { Context } from '../frameworks/shared/decorators/context.decorator';
 import { IContext } from '../frameworks/shared/interceptors/context.interceptor';
-import SuccessResponse from '../frameworks/shared/responses/success.response';
-import UseList from '../frameworks/shared/decorators/uselist.decorator';
+import { SuccessResponse } from '../frameworks/shared/responses/success.response';
+import { UseList } from '../frameworks/shared/decorators/uselist.decorator';
 import { ApiFilterQuery } from '../frameworks/shared/decorators/api-filter-query.decorator';
-import Serializer from '../frameworks/shared/decorators/serializer.decorator';
+import { ExtendedSerializer } from '../frameworks/shared/decorators/serializer.decorator';
 import {
   FilterPaginationAuditQueryValidator,
   ListAuditSerializer,
@@ -88,7 +88,7 @@ export function ControllerFactory<
       summary: 'Get audit details by id',
     })
     @HttpCode(HttpStatus.OK)
-    @Serializer(getSerializer)
+    @ExtendedSerializer(getSerializer)
     @Authentication(true)
     @Authorization(`audit:read@auth`)
     @ApiParam({
@@ -113,7 +113,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.OK)
     @UseList(FilterPaginationAuditQueryValidator)
-    @Serializer(ListAuditSerializer)
+    @ExtendedSerializer(ListAuditSerializer)
     @ApiFilterQuery('filters', ListPaginationAuditQueryValidator)
     @Authentication(true)
     @Authorization(`audit:read@auth`)
@@ -147,7 +147,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.OK)
     @UseList(filterPagination)
-    @Serializer(listSerializer)
+    @ExtendedSerializer(listSerializer)
     @ApiFilterQuery('filters', listPaginationQuery)
     @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
@@ -165,7 +165,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.OK)
     @UseList(filterCursor)
-    @Serializer(listSerializer)
+    @ExtendedSerializer(listSerializer)
     @ApiFilterQuery('filters', listCursorQuery)
     @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
@@ -182,7 +182,7 @@ export function ControllerFactory<
         'Upsert method, you can create or update item by uniqueness of name',
     })
     @HttpCode(HttpStatus.CREATED)
-    @Serializer(upsertSerializer)
+    @ExtendedSerializer(upsertSerializer)
     @Authentication(true)
     @Authorization(`${rolePrefix}:create@auth`, `${rolePrefix}:update@auth`)
     @ApiBody({ type: upsertBodyValidator })
@@ -201,7 +201,7 @@ export function ControllerFactory<
       summary: 'Create method, you can create item',
     })
     @HttpCode(HttpStatus.CREATED)
-    @Serializer(createSerializer)
+    @ExtendedSerializer(createSerializer)
     @Authentication(true)
     @Authorization(`${rolePrefix}:create@auth`)
     @ApiBody({ type: createBodyValidator })
@@ -220,7 +220,7 @@ export function ControllerFactory<
       summary: 'Get by id method, you can get items by id',
     })
     @HttpCode(HttpStatus.OK)
-    @Serializer(getSerializer)
+    @ExtendedSerializer(getSerializer)
     @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
     @ApiParam({
@@ -240,7 +240,7 @@ export function ControllerFactory<
       summary: 'Update method, you can update by id',
     })
     @HttpCode(HttpStatus.CREATED)
-    @Serializer(updateSerializer)
+    @ExtendedSerializer(updateSerializer)
     @Authentication(true)
     @Authorization(`${rolePrefix}:update@auth`)
     @ApiBody({ type: updateBodyValidator })
@@ -265,7 +265,7 @@ export function ControllerFactory<
       summary: 'Delete method, you can delete item by id',
     })
     @HttpCode(HttpStatus.CREATED)
-    @Serializer(deleteSerializer)
+    @ExtendedSerializer(deleteSerializer)
     @Authentication(true)
     @Authorization(`${rolePrefix}:delete@auth`)
     @ApiParam({

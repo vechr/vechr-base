@@ -16,7 +16,7 @@ export interface IContext {
   params: IContextParams;
 }
 
-export default class ContextInterceptor implements NestInterceptor {
+export class ContextInterceptor implements NestInterceptor {
   intercept(ctx: ExecutionContext, next: CallHandler): Observable<any> {
     const request = ctx.switchToHttp().getRequest<
       Request & {

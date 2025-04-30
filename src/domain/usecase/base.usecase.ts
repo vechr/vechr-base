@@ -1,6 +1,6 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { OtelMethodCounter, Span } from 'nestjs-otel';
-import log from '../../frameworks/shared/utils/log.util';
+import { log } from '../../frameworks/shared/utils/log.util';
 import { IContext } from '../../frameworks/shared/interceptors/context.interceptor';
 import {
   EErrorCommonCode,

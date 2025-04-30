@@ -6,11 +6,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { UnknownException } from '../exceptions/common.exception';
-import ErrorResponse from '../responses/error.response';
-import log from '../utils/log.util';
+import { ErrorResponse } from '../responses/error.response';
+import { log } from '../utils/log.util';
 
 @Catch()
-export default class UnknownExceptionFilter implements ExceptionFilter {
+export class UnknownExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     if (!(exception instanceof HttpException)) {
       log.error('Unhandled Error!', exception);

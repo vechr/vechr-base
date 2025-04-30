@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { IErrorResponse } from '../responses/error.response';
 
-export default class BaseException extends HttpException {
+export class BaseException extends HttpException {
   constructor(
     public httpStatus: HttpStatus,
     private code: string,

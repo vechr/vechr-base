@@ -39,7 +39,7 @@ interface ClassConstructor<T = any> {
 }
 
 @Injectable()
-export default class ListQueryPipe<T extends { filters: QueryFilters }>
+export class ListQueryPipe<T extends { filters: QueryFilters }>
   implements PipeTransform
 {
   private readonly contextParamsProps = ['params', 'body', 'query'] as const;

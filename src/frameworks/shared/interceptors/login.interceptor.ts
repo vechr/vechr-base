@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import SuccessResponse from '../responses/success.response';
+import { SuccessResponse } from '../responses/success.response';
 import { generateExpiredDateRefresh } from '../utils/jwt.util';
 import appConfig from '@/config/app.config';
 

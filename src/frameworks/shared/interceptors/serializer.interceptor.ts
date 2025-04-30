@@ -1,13 +1,13 @@
 import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 import { plainToInstance } from 'class-transformer';
-import SuccessResponse from '../responses/success.response';
+import { SuccessResponse } from '../responses/success.response';
 
 interface ClassConstructor {
   new (...args: any[]): any;
 }
 
-export default class SerializerInterceptor implements NestInterceptor {
+export class SerializerInterceptor implements NestInterceptor {
   constructor(private dto: ClassConstructor) {}
 
   intercept(

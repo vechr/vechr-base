@@ -1,9 +1,9 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
-import BaseException from '../exceptions/base.exception';
-import ErrorResponse from '../responses/error.response';
+import { BaseException } from '../exceptions/base.exception';
+import { ErrorResponse } from '../responses/error.response';
 
 @Catch(BaseException)
-export default class HttpExceptionFilter implements ExceptionFilter {
+export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: BaseException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse();

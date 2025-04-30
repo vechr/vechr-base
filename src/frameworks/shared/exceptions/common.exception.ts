@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 
-import BaseException from './base.exception';
+import { BaseException } from './base.exception';
 
 export enum EErrorCommonCode {
   BAD_REQUEST = 'C400',

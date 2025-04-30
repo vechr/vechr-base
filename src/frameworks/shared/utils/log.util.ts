@@ -74,5 +74,3 @@ export const winstonExpressOptions: expressWinston.LoggerOptions = {
     return 'debug';
   },
 };
-
-export default log;

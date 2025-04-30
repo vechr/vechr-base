@@ -1,4 +1,4 @@
-export default class BaseResponse<R = any, E = any> {
+export class BaseResponse<R = any, E = any> {
   constructor(
     public success: boolean,
     public message: string,

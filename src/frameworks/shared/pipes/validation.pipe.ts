@@ -9,7 +9,7 @@ interface ClassConstructor {
 }
 
 @Injectable()
-export default class ValidationPipe implements PipeTransform<any> {
+export class ExtendedValidationPipe implements PipeTransform<any> {
   async transform(value: any, { metatype, type }: ArgumentMetadata) {
     if (!metatype || !this.toValidate(metatype)) {
       return value;

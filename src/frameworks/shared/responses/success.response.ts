@@ -1,6 +1,6 @@
-import BaseResponse from './base.response';
+import { BaseResponse } from './base.response';
 
-export default class SuccessResponse<T = any> extends BaseResponse<T, null> {
+export class SuccessResponse<T = any> extends BaseResponse<T, null> {
   constructor(
     public message: string,
     result: T,
