@@ -34,8 +34,7 @@
     "prisma:prod:deploy": "prisma migrate deploy --schema './database/schema.prisma'",
     "prestart:prod": "npm run prisma:prod:deploy",
     "start:prod": "node dist/server",
-    "semantic-release": "semantic-release",
-    "prepublishOnly": "npm run build"
+    "semantic-release": "semantic-release"
   },
   "dependencies": {
     "@keyv/redis": "^4.3.4",
