@@ -10,59 +10,15 @@ env:
   NODE_ENV: production
 
 jobs:
-  test-build:
+  publish:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: ['ubuntu-latest']
         node-version: [22.x]
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'yarn'
-        registry-url: 'https://npm.pkg.github.com'
-        scope: '@vechr'
-
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          **/node_modules
-          ${{ github.workspace }}/.yarn-cache
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
-
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile --prefer-offline
-
-    - name: Run linting
-      run: yarn lint
-
-    - name: Run tests
-      run: yarn test
-      env:
-        NODE_ENV: test
-
-    - name: Build package
-      run: |
-        yarn prisma:sync
-        yarn build
-      env:
-        NODE_ENV: production
-
-  release:    
-    runs-on: ubuntu-latest
+        
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [ test-build ]
     permissions:
       contents: write
       packages: write
@@ -82,36 +38,6 @@ jobs:
         registry-url: 'https://npm.pkg.github.com'
         scope: '@vechr'
 
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile --prefer-offline
-
-    - name: Release
-      run: yarn semantic-release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-  publish:
-    runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [ test-build, release ]
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22.x
-        cache: 'yarn'
-        registry-url: 'https://npm.pkg.github.com'
-        scope: '@vechr'
-
     - name: Cache dependencies
       uses: actions/cache@v4
       with:
@@ -123,7 +49,16 @@ jobs:
           ${{ runner.os }}-yarn-
 
     - name: Install dependencies
-      run: yarn install --frozen-lockfile --prefer-offline
+      run: |
+        yarn install --frozen-lockfile --prefer-offline
+        yarn add -D semantic-release @semantic-release/github @semantic-release/npm @semantic-release/commit-analyzer @semantic-release/release-notes-generator
+        yarn global add @nestjs/cli
+
+    - name: Release
+      run: yarn semantic-release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and Publish Package
       run: |
@@ -133,6 +68,7 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NODE_ENV: production
+        PATH: ${{ github.workspace }}/node_modules/.bin:$PATH
 
     - name: Verify Package
       run: |
