@@ -6,8 +6,6 @@ export class AuthUser extends BaseEntity {
   fullName: string | null;
   name: string;
   password: string;
-  siteId: string;
-  siteCode: string;
   roles: string[];
   permissions: string[];
 }
