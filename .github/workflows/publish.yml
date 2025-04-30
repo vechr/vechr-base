@@ -1,0 +1,85 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  SERVICE_NAME: things-service
+
+jobs:
+  test-build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ['ubuntu-latest']
+        node-version: [20.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'yarn'
+    - run: yarn install --frozen-lockfile
+    - run: yarn prisma:sync
+    - run: yarn build
+
+  release:    
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: [ test-build ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: 'yarn'
+    - run: yarn install --frozen-lockfile
+    - run: yarn semantic-release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: [ test-build, release ]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - 
+      id: release-service
+      name: Get Latest Release
+      uses: pozetroninc/github-action-get-latest-release@v0.8.0
+      with:
+        repository: ${{ github.repository }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install the gcloud CLI
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        project_id: ${{ secrets.GOOGLE_PROJECT }}
+        service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        export_default_credentials: true
+
+    - name: Build and Push the docker image
+      env:
+        GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+      run: |
+        gcloud auth configure-docker asia-southeast2-docker.pkg.dev --quiet
+        DOCKER_BUILDKIT=1 docker build -f ./docker/Dockerfile.prod -t asia-southeast2-docker.pkg.dev/$GOOGLE_PROJECT/vechr-iiot-repository/$SERVICE_NAME:latest -t asia-southeast2-docker.pkg.dev/$GOOGLE_PROJECT/vechr-iiot-repository/$SERVICE_NAME:${{ steps.release-service.outputs.release }} .
+        docker push --all-tags asia-southeast2-docker.pkg.dev/$GOOGLE_PROJECT/vechr-iiot-repository/$SERVICE_NAME
+
+    - 
+      name: Discord notification
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      uses: Ilshidur/action-discord@master
+      with:
+        args: 'Project {{ EVENT_PAYLOAD.repository.full_name }} generate container successfully!. Try command ` docker pull asia-southeast2-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/vechr-iiot-repository/${{ env.SERVICE_NAME }}:latest ` to pull the lastest image.'
