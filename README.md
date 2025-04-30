@@ -10,21 +10,6 @@ NATS_URL=nats://localhost:4222
 DB_URL="postgresql://Vechr:123@localhost:5432/things_db?schema=public"
 ```
 
-# Running Thing Service
-```bash
-yarn install
-yarn prisma:sync
-yarn db:migrate
-yarn db:studio
-yarn watch
-```
-
-# Build Image for Production
-```bash
-chmod +x ./docker/build.sh
-./docker/build.sh
-```
-
 # Vechr Base
 
 A NestJS-based foundation package for building scalable applications. This package provides a set of common utilities, configurations, and best practices for NestJS applications.
