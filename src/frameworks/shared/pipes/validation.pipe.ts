@@ -2,7 +2,7 @@ import { ArgumentMetadata, PipeTransform } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { BadRequestException } from '../exceptions/common.exception';
+import { ExtendedBadRequestException } from '../exceptions/common.exception';
 
 interface ClassConstructor {
   new (...args: any[]): any;
@@ -29,7 +29,7 @@ export default class ValidationPipe implements PipeTransform<any> {
     }));
 
     if (errors.length > 0) {
-      throw new BadRequestException({
+      throw new ExtendedBadRequestException({
         message: 'Validation failed!',
         params: customErrors,
       });

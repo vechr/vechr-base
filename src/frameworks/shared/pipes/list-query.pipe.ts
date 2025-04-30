@@ -1,7 +1,7 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { BadRequestException } from '../exceptions/common.exception';
+import { ExtendedBadRequestException } from '../exceptions/common.exception';
 import qs from 'qs';
 import {
   ESortMode,
@@ -100,7 +100,7 @@ export default class ListQueryPipe<T extends { filters: QueryFilters }>
           try {
             filters[key] = JSON.parse(filters[key] as string);
           } catch (error) {
-            throw new BadRequestException({
+            throw new ExtendedBadRequestException({
               message: `Invalid JSON in ${key} filter`,
               params: [
                 {
@@ -136,7 +136,7 @@ export default class ListQueryPipe<T extends { filters: QueryFilters }>
         errors: Object.values(err.constraints || {}).join(', '),
       }));
 
-      throw new BadRequestException({
+      throw new ExtendedBadRequestException({
         message: 'Validation failed',
         params: validationErrors,
       });

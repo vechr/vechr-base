@@ -26,7 +26,7 @@ export class DuplicateException extends BaseException {
   }
 }
 
-export class BadRequestException extends BaseException {
+export class ExtendedBadRequestException extends BaseException {
   constructor(payload?: {
     message?: string;
     code?: string;
@@ -41,7 +41,7 @@ export class BadRequestException extends BaseException {
   }
 }
 
-export class UnauthorizedException extends BaseException {
+export class ExtendedUnauthorizedException extends BaseException {
   constructor(payload?: {
     message?: string;
     code?: string;
@@ -56,7 +56,7 @@ export class UnauthorizedException extends BaseException {
   }
 }
 
-export class ForbiddenException extends BaseException {
+export class ExtendedForbiddenException extends BaseException {
   constructor(payload?: {
     message?: string;
     code?: string;
@@ -71,7 +71,7 @@ export class ForbiddenException extends BaseException {
   }
 }
 
-export class NotFoundException extends BaseException {
+export class ExtendedNotFoundException extends BaseException {
   constructor(payload?: {
     message?: string;
     code?: string;

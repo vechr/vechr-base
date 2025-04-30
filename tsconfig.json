@@ -26,7 +26,7 @@
     "allowJs": false,
     "declaration": true,
     "sourceMap": true,
-    "outDir": "./.build",
+    "outDir": "./dist",
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

@@ -1,5 +1,5 @@
 import { Cache } from 'cache-manager';
-import { NotFoundException } from '../../frameworks/shared/exceptions/common.exception';
+import { ExtendedNotFoundException } from '../../frameworks/shared/exceptions/common.exception';
 import {
   IListCursorResult,
   IListPaginationResult,
@@ -48,7 +48,7 @@ export class ReadHelper {
       });
 
       if (!data) {
-        throw new NotFoundException({
+        throw new ExtendedNotFoundException({
           message: `${entity} with id ${id} is not found!`,
         });
       }

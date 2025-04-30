@@ -2,8 +2,8 @@ import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import {
-  ForbiddenException,
-  UnauthorizedException,
+  ExtendedForbiddenException,
+  ExtendedUnauthorizedException,
 } from '../exceptions/common.exception';
 import log from '../utils/log.util';
 import { TCompactAuthUser } from '@/domain';
@@ -27,14 +27,14 @@ export class AuthenticationGuard extends AuthGuard('jwt') {
   ): TUser {
     if (info) {
       if (info instanceof TokenExpiredError) {
-        throw new UnauthorizedException({
+        throw new ExtendedUnauthorizedException({
           message: 'Token expired!',
           code: EErrorJwtCode.TOKEN_EXPIRED,
           params: { message: info.message },
         });
       }
       if (info instanceof JsonWebTokenError) {
-        throw new UnauthorizedException({
+        throw new ExtendedUnauthorizedException({
           message: 'Token expired!',
           code: EErrorJwtCode.TOKEN_EXPIRED,
           params: { message: info.message },
@@ -44,7 +44,7 @@ export class AuthenticationGuard extends AuthGuard('jwt') {
 
     if (err || info || !user) {
       if (!user) {
-        throw new UnauthorizedException({
+        throw new ExtendedUnauthorizedException({
           message: 'Token required!',
           code: EErrorJwtCode.TOKEN_REQUIRED,
           params: {
@@ -52,7 +52,7 @@ export class AuthenticationGuard extends AuthGuard('jwt') {
           },
         });
       } else {
-        throw new UnauthorizedException({
+        throw new ExtendedUnauthorizedException({
           message: 'Invalid token!',
           code: EErrorJwtCode.TOKEN_INVALID,
           params: {
@@ -84,7 +84,7 @@ export class AuthenticationGuard extends AuthGuard('jwt') {
     }
 
     if (!isAuthorized) {
-      throw new ForbiddenException();
+      throw new ExtendedForbiddenException();
     }
 
     return user as TUser;
