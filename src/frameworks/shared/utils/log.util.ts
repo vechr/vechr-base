@@ -3,7 +3,7 @@ import { transports } from 'winston';
 import * as winston from 'winston';
 import * as expressWinston from 'express-winston';
 import LokiTransport from 'winston-loki';
-import appConfig from '@/config/app.config';
+import baseConfig from '@/config/base.config';
 
 const { combine, timestamp, ms } = winston.format;
 
@@ -21,7 +21,7 @@ const { combine, timestamp, ms } = winston.format;
 const winstonFormat = combine(
   timestamp(),
   ms(),
-  utilities.format.nestLike(appConfig.app.name, {
+  utilities.format.nestLike(baseConfig.app.name, {
     colors: true,
     prettyPrint: true,
   }),
@@ -32,12 +32,12 @@ const consoleTransport = new transports.Console({
 });
 
 const lokiTransport = new LokiTransport({
-  labels: { application: appConfig.app.name },
+  labels: { application: baseConfig.app.name },
   batching: false,
-  host: appConfig.logging.loki.host,
+  host: baseConfig.logging.loki.host,
   basicAuth:
-    appConfig.logging.loki.username && appConfig.logging.loki.password
-      ? `${appConfig.logging.loki.username}:${appConfig.logging.loki.password}`
+    baseConfig.logging.loki.username && baseConfig.logging.loki.password
+      ? `${baseConfig.logging.loki.username}:${baseConfig.logging.loki.password}`
       : undefined,
   format: winstonFormat,
 });

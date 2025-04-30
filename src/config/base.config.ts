@@ -1,9 +1,9 @@
 import * as env from 'env-var';
-import { VechrBaseConfig } from './config.interface';
 import dotenv = require('dotenv');
+import { BaseConfig } from './config.interface';
 dotenv.config();
 
-const config: VechrBaseConfig = {
+const config: BaseConfig = {
   app: {
     port: env.get('APP_PORT').default(3000).asInt(),
     name: env.get('APP_NAME').default('things-service').asString(),
@@ -58,6 +58,10 @@ const config: VechrBaseConfig = {
       ttl: env.get('REDIS_TTL').default(300).asInt(),
     },
   },
+};
+
+export const loadBaseConfig = (): BaseConfig => {
+  return config;
 };
 
 export default Object.freeze(config);

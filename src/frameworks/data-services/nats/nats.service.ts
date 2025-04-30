@@ -5,8 +5,8 @@ import {
   OnApplicationShutdown,
   OnModuleInit,
 } from '@nestjs/common';
-import { VechrBaseModuleConfig } from '@/config/module.config';
 import { log, sleep } from '@/frameworks/shared';
+import baseConfig from '@/config/base.config';
 
 @Injectable()
 export class NatsService
@@ -16,15 +16,13 @@ export class NatsService
   public subscriber: Subscription;
   public kv: KV;
 
-  private readonly config = VechrBaseModuleConfig.getConfig();
-
   private brokerConfig: ConnectionOptions = {
-    servers: this.config.nats?.url,
+    servers: baseConfig.nats?.url,
     maxReconnectAttempts: 10,
     tls: {
-      caFile: this.config.nats?.ca,
-      keyFile: this.config.nats?.key,
-      certFile: this.config.nats?.cert,
+      caFile: baseConfig.nats?.ca,
+      keyFile: baseConfig.nats?.key,
+      certFile: baseConfig.nats?.cert,
     },
   };
 

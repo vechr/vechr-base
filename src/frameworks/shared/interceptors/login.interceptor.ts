@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
 import { SuccessResponse } from '../responses/success.response';
 import { generateExpiredDateRefresh } from '../utils/jwt.util';
-import appConfig from '@/config/app.config';
+import baseConfig from '@/config/base.config';
 
 export class LoginInterceptor implements NestInterceptor {
   intercept(
@@ -16,16 +16,16 @@ export class LoginInterceptor implements NestInterceptor {
 
         response.cookie('access-token', result.token, {
           expires: result.expiredAt,
-          sameSite: appConfig.cookie?.sameSite,
-          httpOnly: appConfig.cookie?.httpOnly,
-          secure: appConfig.cookie?.secure,
+          sameSite: baseConfig.cookie?.sameSite,
+          httpOnly: baseConfig.cookie?.httpOnly,
+          secure: baseConfig.cookie?.secure,
         });
 
         response.cookie('refresh-token', result.refresh, {
           expires: generateExpiredDateRefresh(),
-          sameSite: appConfig.cookie?.sameSite,
-          httpOnly: appConfig.cookie?.httpOnly,
-          secure: appConfig.cookie?.secure,
+          sameSite: baseConfig.cookie?.sameSite,
+          httpOnly: baseConfig.cookie?.httpOnly,
+          secure: baseConfig.cookie?.secure,
         });
 
         return data;

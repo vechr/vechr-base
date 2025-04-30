@@ -1,4 +1,4 @@
-export interface VechrBaseConfig {
+export interface BaseConfig {
   app: {
     port: number;
     name: string;

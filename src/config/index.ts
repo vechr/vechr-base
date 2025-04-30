@@ -1,3 +1,2 @@
-export * from './app.config';
+export * from './base.config';
 export * from './config.interface';
-export * from './module.config';

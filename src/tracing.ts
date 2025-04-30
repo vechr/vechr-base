@@ -14,7 +14,7 @@ import { NodeSDK } from '@opentelemetry/sdk-node';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
 import { PrismaInstrumentation } from '@prisma/instrumentation';
 import { WinstonInstrumentation } from '@opentelemetry/instrumentation-winston';
-import appConfig from './config/app.config';
+import baseConfig from './config/base.config';
 
 /**
  * ENABLE THIS FOR DEBUGGING
@@ -23,13 +23,13 @@ import appConfig from './config/app.config';
 // diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 
 export const otelSDK = new NodeSDK({
-  serviceName: appConfig.app.name,
+  serviceName: baseConfig.app.name,
   metricReader: new PrometheusExporter({
     port: 8081,
   }),
   spanProcessor: new BatchSpanProcessor(
     new OTLPTraceExporter({
-      url: appConfig.tracing.otlpHttpUrl,
+      url: baseConfig.tracing.otlpHttpUrl,
     }),
   ),
   contextManager: new AsyncLocalStorageContextManager(),

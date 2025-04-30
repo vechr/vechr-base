@@ -8,7 +8,7 @@ import {
   decryptedDataUser,
 } from '../shared/utils/jwt.util';
 import { TCompactAuthUser } from '../../domain/entities/auth.entity';
-import appConfig from '@/config/app.config';
+import baseConfig from '@/config/base.config';
 
 const { fromExtractors, fromAuthHeaderAsBearerToken } = ExtractJwt;
 
@@ -19,7 +19,7 @@ export class AuthStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest:
         fromExtractors([cookieExtractor, fromAuthHeaderAsBearerToken()]) ??
         ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: appConfig.jwt.secret,
+      secretOrKey: baseConfig.jwt.secret,
     });
   }
 

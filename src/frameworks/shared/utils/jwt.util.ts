@@ -7,7 +7,7 @@ import CryptoJS from 'crypto-js';
 import { ExtractJwt } from 'passport-jwt';
 import { TCompactAuthUser } from '../../../domain/entities/auth.entity';
 import { rand, sha512 } from './security.util';
-import appConfig from '@/config/app.config';
+import baseConfig from '@/config/base.config';
 
 const { fromExtractors, fromAuthHeaderAsBearerToken } = ExtractJwt;
 export interface IGeneratedJwt {
@@ -36,13 +36,13 @@ export const generateRefresh = async (): Promise<string> => {
 };
 
 export const generateExpiredDateToken = (): Date => {
-  const expIn = appConfig.jwt.expiresIn as StringValue;
+  const expIn = baseConfig.jwt.expiresIn as StringValue;
 
   return new Date(Date.now() + ms(expIn));
 };
 
 export const generateExpiredDateRefresh = (): Date => {
-  const expIn = appConfig.jwt.refreshExpiresIn as StringValue;
+  const expIn = baseConfig.jwt.refreshExpiresIn as StringValue;
 
   return new Date(Date.now() + ms(expIn));
 };
@@ -59,9 +59,9 @@ export const generateJwt = async ({
   const refresh = await generateRefresh();
   const token = jwt.sign(
     { payload: encryptedDataUser(user) },
-    appConfig.jwt.secret,
+    baseConfig.jwt.secret,
     {
-      expiresIn: appConfig.jwt.expiresIn as StringValue,
+      expiresIn: baseConfig.jwt.expiresIn as StringValue,
       subject: translator.fromUUID(userId),
       audience: origin,
       issuer: `by_zulfikar:vechr.com`,
@@ -82,7 +82,7 @@ export const jwtOptions = {
     cookieExtractor,
     fromAuthHeaderAsBearerToken(),
   ]),
-  secretOrKey: appConfig.jwt.secret,
+  secretOrKey: baseConfig.jwt.secret,
   jwtCookieName: 'access-token',
 };
 
@@ -98,7 +98,7 @@ export const encryptedDataUser = (user: TCompactAuthUser) => {
   return encodeURIComponent(
     CryptoJS.AES.encrypt(
       JSON.stringify(user),
-      appConfig.encryption.secret,
+      baseConfig.encryption.secret,
     ).toString(),
   );
 };
@@ -106,7 +106,7 @@ export const encryptedDataUser = (user: TCompactAuthUser) => {
 export const decryptedDataUser = (secureData: string) => {
   const deData = CryptoJS.AES.decrypt(
     decodeURIComponent(secureData),
-    appConfig.encryption.secret,
+    baseConfig.encryption.secret,
   );
 
   if (!isJsonString(deData.toString(CryptoJS.enc.Utf8))) {
