@@ -2,88 +2,143 @@ name: Node.js Package
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
 
 env:
   NODE_ENV: production
 
 jobs:
   publish:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: ['ubuntu-latest']
-        node-version: [22.x]
-        
-    if: ${{ github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
-      issues: write
-      pull-requests: write
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22.x
-        cache: 'yarn'
-        registry-url: 'https://npm.pkg.github.com'
-        scope: '@vechr'
 
-    - name: Install Yarn
-      run: |
-        npm install -g yarn
-        yarn --version
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'yarn'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@vechr'
 
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          **/node_modules
-          ${{ github.workspace }}/.yarn-cache
-        key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
+      - name: Install Yarn
+        run: |
+          npm install -g yarn
+          yarn --version
 
-    - name: Install dependencies
-      run: |
-        yarn install --frozen-lockfile --prefer-offline --ignore-scripts
-        yarn add -D semantic-release @semantic-release/github @semantic-release/npm @semantic-release/commit-analyzer @semantic-release/release-notes-generator rimraf
-        yarn global add @nestjs/cli
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile --prefer-offline --ignore-scripts
+          yarn add -D rimraf
+          yarn global add @nestjs/cli
 
-    - name: Create .npmrc
-      run: |
-        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > .npmrc
-        echo "@vechr:registry=https://npm.pkg.github.com" >> .npmrc
-        echo "always-auth=true" >> .npmrc
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+        
+      - name: Determine Version Bump
+        id: version_bump
+        run: |
+          # Check commit messages since last tag to determine version bump type
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | head -n 1 || echo "v0.0.0")
+          MAJOR_PATTERN="BREAKING CHANGE:|major:"
+          MINOR_PATTERN="feat:|feature:|minor:"
+          PATCH_PATTERN="fix:|patch:|docs:|style:|refactor:|perf:|test:|chore:"
+          
+          if git log ${PREVIOUS_TAG}..HEAD --pretty=format:"%s" | grep -E "$MAJOR_PATTERN"; then
+            echo "bump=major" >> $GITHUB_OUTPUT
+          elif git log ${PREVIOUS_TAG}..HEAD --pretty=format:"%s" | grep -E "$MINOR_PATTERN"; then
+            echo "bump=minor" >> $GITHUB_OUTPUT
+          else
+            echo "bump=patch" >> $GITHUB_OUTPUT
+          fi
 
-    - name: Release
-      run: yarn semantic-release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get current version
+        id: current_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        
+      - name: Bump version
+        id: bump_version
+        run: |
+          CURRENT_VERSION=${{ steps.current_version.outputs.version }}
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
+          
+          if [ "${{ steps.version_bump.outputs.bump }}" == "major" ]; then
+            NEW_VERSION="$((MAJOR + 1)).0.0"
+          elif [ "${{ steps.version_bump.outputs.bump }}" == "minor" ]; then
+            NEW_VERSION="${MAJOR}.$((MINOR + 1)).0"
+          else
+            NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          fi
+          
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          
+          # Update package.json with new version
+          npm version ${NEW_VERSION} --no-git-tag-version
+      
+      - name: Get previous tag
+        id: previoustag
+        run: |
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | head -n 1 || echo "v0.0.0")
+          echo "tag=${PREVIOUS_TAG}" >> $GITHUB_OUTPUT
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREVIOUS_TAG=${{ steps.previoustag.outputs.tag }}
+          CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"* %s (%h)" --reverse)
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="* Maintenance updates"
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Commit version bump
+        run: |
+          # First pull any latest changes
+          git pull origin master
+          
+          # Stage, commit and push the version changes
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new_version }} [skip ci]"
+          git push
+      
+      - name: Create Release and Tag
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.bump_version.outputs.new_version }}
+          release_name: Release v${{ steps.bump_version.outputs.new_version }}
+          body: |
+            # Changelog
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Version Bump Type: ${{ steps.version_bump.outputs.bump }}
+          draft: false
+          prerelease: false
 
-    - name: Build and Publish Package
-      run: |
-        yarn prisma:sync
-        yarn build
-        yarn publish --access public --no-git-tag-version
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NODE_ENV: production
-        PATH: ${{ github.workspace }}/node_modules/.bin:$PATH
-        NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc
-
-    - name: Verify Package
-      run: |
-        yarn cache clean
-        yarn add @vechr/vechr-base@latest
-        yarn list --pattern @vechr/vechr-base
+      - name: Build
+        run: |
+          yarn prisma:sync
+          yarn build
+      
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
