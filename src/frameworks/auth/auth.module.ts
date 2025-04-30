@@ -30,4 +30,4 @@ import appConfig from '@/config/app.config';
   ],
   providers: [AuthStrategy],
 })
-export default class AuthModule {}
+export class AuthModule {}

@@ -1,18 +1,8 @@
-export * from './data';
-export * from './domain';
-export * from './config';
-export * from './frameworks';
-export * from './infrastructure';
-export * from './tracing';
-
-// Re-export commonly used NestJS components
-// export * from '@nestjs/common';
-// export * from '@nestjs/core';
-// export * from '@nestjs/platform-express';
-// export * from '@nestjs/cache-manager';
-// export * from '@nestjs/common';
-// export * from '@nestjs/core';
-// export * from '@nestjs/jwt';
-// export * from '@nestjs/microservices';
-// export * from '@nestjs/swagger';
-// export * from '@nestjs/terminus';
+// Export all modules under @vechr/vechr-base namespace
+export * as Data from './data';
+export * as Domain from './domain';
+export * as Config from './config';
+export * as Frameworks from './frameworks';
+export * as Infrastructure from './infrastructure';
+export * as Tracing from './tracing';
+export * as Nest from './external/nest';
