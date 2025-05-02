@@ -1,3 +1,6 @@
+/* This TypeScript code defines an interface named `BaseConfig` which represents the configuration
+structure for a web application. Here's a breakdown of what each property within the `BaseConfig`
+interface represents: */
 export interface BaseConfig {
   app: {
     port: number;

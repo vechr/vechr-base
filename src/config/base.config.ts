@@ -1,3 +1,7 @@
+/* This TypeScript code snippet is defining a configuration object `config` that contains various
+settings for different parts of an application. It uses environment variables to populate these
+settings, with default values provided where necessary. The `env-var` library is used to access
+environment variables, and the `dotenv` library is used to load variables from a `.env` file. */
 import * as env from 'env-var';
 import dotenv = require('dotenv');
 import { BaseConfig } from './config.interface';
@@ -24,7 +28,7 @@ const config: BaseConfig = {
     cert: env.get('NATS_CERT').required().asString(),
   },
   jwt: {
-    secret: env.get('JWT_SECRET').required().asString(),
+    secret: env.get('JWT_SECRET').default('secretvechr').asString(),
     expiresIn: env.get('JWT_EXPIRES_IN').default('3d').asString(),
     refreshExpiresIn: env
       .get('JWT_REFRESH_EXPIRES_IN')
@@ -32,7 +36,7 @@ const config: BaseConfig = {
       .asString(),
   },
   encryption: {
-    secret: env.get('ECRYPTED_SECRET').required().asString(),
+    secret: env.get('ECRYPTED_SECRET').default('usersecret').asString(),
   },
   audit: {
     events: {

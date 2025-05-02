@@ -55,6 +55,13 @@ export class Tree<Entity extends NodeTree> {
     });
   }
 
+  /**
+   * The function `fillTree` recursively fills a tree structure with entities and their groups.
+   * @param {Entity[]} entities - Entities is an array of objects representing entities in a tree
+   * structure. Each entity may have child entities associated with it.
+   * @param {NodeTree} node - The `node` parameter in the `fillTree` function represents a node in a
+   * tree data structure. It contains information about entities and groups associated with that node.
+   */
   private fillTree(entities: Entity[], node: NodeTree): void {
     this.fillEntities(entities, node);
 
