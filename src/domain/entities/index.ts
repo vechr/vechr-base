@@ -5,3 +5,4 @@ export * from './audit.entity';
 export * from './auth.entity';
 export * from './tree.entity';
 export * from './validator.entity';
+export * from './graph.entity';
