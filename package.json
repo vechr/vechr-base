@@ -82,6 +82,7 @@
     "rxjs": "^7.8.2",
     "short-uuid": "^5.2.0",
     "swagger-ui-express": "^5.0.1",
+    "typescript-graph": "^0.3.0",
     "winston": "^3.17.0",
     "winston-loki": "^6.1.3"
   },
