@@ -3,17 +3,7 @@ import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { IContext, IContextParams } from './context.interceptor';
 import { JwtService } from '@nestjs/jwt';
-
-export interface IRpcContext {
-  pattern: string;
-  transport: string;
-  client: {
-    id: string;
-    host: string;
-    port: number;
-  };
-  timestamp: number;
-}
+import { NatsContext } from '@nestjs/microservices';
 
 export class ContextRpcInterceptor implements NestInterceptor {
   constructor(private readonly jwtService: JwtService) {}
@@ -21,19 +11,16 @@ export class ContextRpcInterceptor implements NestInterceptor {
   intercept(ctx: ExecutionContext, next: CallHandler): Observable<any> {
     const rpcContext = ctx.switchToRpc();
     const data = rpcContext.getData();
-    const rpcMetadata = rpcContext.getContext<IRpcContext>();
+    const natsContext = rpcContext.getContext<NatsContext>();
 
-    // Extract JWT from the data if it exists
-    const accessToken = this.extractToken(data);
+    // Extract JWT from both NATS headers and message data
+    const accessToken = this.extractToken(natsContext?.getHeaders(), data);
     const user = accessToken ? this.validateToken(accessToken) : null;
-
-    // Extract NATS-specific headers
-    const natsHeaders = this.extractNatsHeaders(rpcMetadata);
 
     const context: IContext = {
       headers: {
-        ...this.extractHeaders(data),
-        ...natsHeaders,
+        ...natsContext?.getHeaders(),
+        'x-nats-subject': natsContext?.getSubject(),
       },
       user: user as TCompactAuthUser,
       params: this.extractParams(data),
@@ -49,11 +36,22 @@ export class ContextRpcInterceptor implements NestInterceptor {
     return next.handle();
   }
 
-  private extractToken(data: any): string | undefined {
-    if (!data) return undefined;
+  private extractToken(
+    headers: Record<string, string> | undefined,
+    data: any,
+  ): string | undefined {
+    // Try to get token from NATS headers first
+    if (headers) {
+      const headerToken =
+        headers.authorization?.split(' ')[1] ||
+        headers['x-access-token'] ||
+        headers['access-token'];
 
-    // Handle different token formats in NATS messages
-    if (typeof data === 'object') {
+      if (headerToken) return headerToken;
+    }
+
+    // If no token in headers, try message data
+    if (data && typeof data === 'object') {
       return (
         data.accessToken ||
         data.token ||
@@ -61,6 +59,7 @@ export class ContextRpcInterceptor implements NestInterceptor {
         (data.headers && data.headers['x-access-token'])
       );
     }
+
     return undefined;
   }
 
@@ -70,24 +69,6 @@ export class ContextRpcInterceptor implements NestInterceptor {
     } catch (_error) {
       return null;
     }
-  }
-
-  private extractHeaders(data: any): Record<string, any> {
-    if (!data || typeof data !== 'object') return {};
-    return data.headers || {};
-  }
-
-  private extractNatsHeaders(rpcMetadata: IRpcContext): Record<string, string> {
-    if (!rpcMetadata) return {};
-
-    return {
-      'x-rpc-pattern': rpcMetadata.pattern,
-      'x-rpc-transport': rpcMetadata.transport,
-      'x-rpc-client-id': rpcMetadata.client?.id,
-      'x-rpc-client-host': rpcMetadata.client?.host,
-      'x-rpc-client-port': rpcMetadata.client?.port?.toString(),
-      'x-rpc-timestamp': rpcMetadata.timestamp?.toString(),
-    };
   }
 
   private extractParams(data: any): IContextParams {
