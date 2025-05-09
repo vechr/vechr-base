@@ -50,8 +50,55 @@ The package includes built-in support for NATS messaging with authentication and
 # Get an item by ID
 nats req 'vechr.{service}.get' '{"id": "123"}' --header "x-access-token: your-jwt-token"
 
-# List items with pagination
-nats req 'vechr.{service}.list' '{"page": 1, "limit": 10}' --header "x-access-token: your-jwt-token"
+# Get audit details by ID
+nats req 'vechr.{service}.getAudit' '{"id": "123"}' --header "x-access-token: your-jwt-token"
+
+# List audits with pagination
+nats req 'vechr.{service}.getAudits' '{
+  "filters": {
+    "pagination": {
+      "page": 1,
+      "limit": 10
+    }
+  }
+}' --header "x-access-token: your-jwt-token"
+
+# Get dropdown list (id and name only)
+nats req 'vechr.{service}.listDropdown' '{}' --header "x-access-token: your-jwt-token"
+
+# List with page-based pagination
+nats req 'vechr.{service}.listPagination' '{
+  "filters": {
+    "pagination": {
+      "page": 1,
+      "limit": 10
+    },
+    "sort": {
+      "by": "createdAt",
+      "mode": "DESC"
+    }
+  }
+}' --header "x-access-token: your-jwt-token"
+
+# List with cursor-based pagination
+nats req 'vechr.{service}.listCursor' '{
+  "filters": {
+    "pagination": {
+      "cursor": "last-item-id",
+      "limit": 10
+    },
+    "sort": {
+      "by": "createdAt",
+      "mode": "DESC"
+    }
+  }
+}' --header "x-access-token: your-jwt-token"
+
+# Create or update by uniqueness
+nats req 'vechr.{service}.upsert' '{
+  "name": "Example",
+  "description": "Test item"
+}' --header "x-access-token: your-jwt-token"
 
 # Create a new item
 nats req 'vechr.{service}.create' '{"name": "Example", "description": "Test item"}' --header "x-access-token: your-jwt-token"
@@ -64,6 +111,133 @@ nats req 'vechr.{service}.delete' '{"id": "123"}' --header "x-access-token: your
 
 # Batch delete items
 nats req 'vechr.{service}.deleteBatch' '{"ids": ["123", "456"]}' --header "x-access-token: your-jwt-token"
+```
+
+### List Query with Pagination and Sorting
+
+The package includes a `ListQueryRpcPipe` for handling list queries with pagination and sorting. Here's how to use it:
+
+1. Define your DTO with the correct structure:
+```typescript
+class UserListDto {
+  filters: {
+    pagination: {
+      page: number;
+      limit: number;
+    };
+    sort: {
+      by: string;
+      mode: ESortMode;
+    };
+    field?: {
+      status?: string;
+      role?: string;
+    };
+  };
+}
+```
+
+2. Use the pipe in your controller:
+```typescript
+@Controller()
+export class UserController {
+  constructor(private readonly userService: IUserService) {}
+
+  @MessagePattern('vechr.users.list')
+  @UsePipes(new ListQueryRpcPipe(UserListDto))
+  async list(
+    @Context() ctx: IContext,
+    @Payload() data: UserListDto,
+  ): Promise<SuccessResponse> {
+    const result = await this.userService.list(ctx, data.filters);
+    return new SuccessResponse('Users fetched successfully', result);
+  }
+}
+```
+
+3. Call the endpoint using NATS CLI:
+```bash
+# List with cursor-based pagination
+nats req 'vechr.{service}.list' '{
+  "filters": {
+    "pagination": {
+      "cursor": "last-item-id",
+      "limit": 10
+    },
+    "sort": {
+      "by": "createdAt",
+      "mode": "DESC"
+    }
+  }
+}' --header "x-access-token: your-jwt-token"
+
+# List with offset-based pagination
+nats req 'vechr.{service}.list' '{
+  "filters": {
+    "pagination": {
+      "page": 1,
+      "limit": 10
+    },
+    "sort": {
+      "by": "name",
+      "mode": "ASC"
+    }
+  }
+}' --header "x-access-token: your-jwt-token"
+
+# List with field filters
+nats req 'vechr.{service}.list' '{
+  "filters": {
+    "pagination": {
+      "page": 1,
+      "limit": 10
+    },
+    "sort": {
+      "by": "createdAt",
+      "mode": "DESC"
+    },
+    "field": {
+      "status": "active",
+      "type": "user"
+    }
+  }
+}' --header "x-access-token: your-jwt-token"
+```
+
+The pipe provides:
+- Automatic validation of pagination, sorting, and field filters
+- Type safety using class-transformer and class-validator
+- Integration with your context system for authentication
+- Standard error responses for validation failures
+
+Example response:
+```json
+{
+  "success": true,
+  "message": "Users fetched successfully",
+  "data": {
+    "items": [...],
+    "total": 100,
+    "page": 1,
+    "limit": 10
+  }
+}
+```
+
+Example error response (if validation fails):
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "code": "R400",
+  "params": [
+    {
+      "field": "filters.pagination.limit",
+      "value": "invalid",
+      "errors": "limit must be a number"
+    }
+  ]
+}
 ```
 
 ### Authentication Headers

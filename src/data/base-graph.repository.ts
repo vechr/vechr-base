@@ -5,7 +5,6 @@ import {
   TPath,
 } from '../domain/entities/graph.entity';
 import { ExtendedBadRequestException } from '../frameworks/shared/exceptions/common.exception';
-import { CyclicException } from '../frameworks/shared/exceptions/graph.exception';
 import { camelize } from '../frameworks/shared/utils/string.util';
 import { GraphHelper } from './helpers';
 
@@ -212,9 +211,7 @@ export class BaseGraphRepository<
      * Check whether is data cyclic!. because cyclic can cause circular references!
      */
     if (!graph.isAcyclic()) {
-      throw new CyclicException({
-        message: 'the candidate groups contain cyclic!',
-      });
+      throw new Error('the candidate groups contain cyclic!');
     }
 
     /**

@@ -8,6 +8,7 @@ import { ExtendedSerializer } from '../frameworks/shared/decorators/serializer.d
 import { Authentication } from '../frameworks/shared/decorators/authentication.decorator';
 import { Authorization } from '../frameworks/shared/decorators/authorization.decorator';
 import { Context } from '../frameworks/shared/decorators/context.decorator';
+import { UseList } from '../frameworks/shared/decorators/uselist.decorator';
 
 /**
  * ## Factory Messaging Controller Generator
@@ -15,29 +16,101 @@ import { Context } from '../frameworks/shared/decorators/context.decorator';
  * @param name name of the controller
  * @param messageType type of message (e.g., 'SystemControl', 'SystemMonitor')
  * @param rolePrefix is used to specify the role prefix
+ * @param filterPagination list pagination (validation pipe)
+ * @param filterCursor list cursor (validation pipe)
  * @param getSerializer get by id (response)
  * @param listSerializer list (response)
  * @param createSerializer create (response)
  * @param updateSerializer update (response)
  * @param deleteSerializer delete (response)
+ * @param upsertSerializer upsert (response)
  * @returns BaseMessagingController
  */
 export function MessagingControllerFactory<
   CreateBody,
   UpdateBody,
   DeleteBody extends { ids: string[] },
+  UpsertBody,
 >(
   name: string,
   messageType: string,
   rolePrefix: string,
+  filterPagination: Type,
+  filterCursor: Type,
   getSerializer: Type,
   listSerializer: Type,
   createSerializer: Type,
   updateSerializer: Type,
   deleteSerializer: Type,
+  upsertSerializer: Type,
 ) {
   class BaseMessagingController {
     public _usecase: BaseUseCase;
+
+    @MessagePattern(SubjectFactory.buildSubject(messageType, 'getAudit'))
+    @ExtendedSerializer(getSerializer)
+    @Authentication(true)
+    @Authorization(`audit:read@auth`)
+    async getAudit(data: { id: string }) {
+      const result = await this._usecase.getAudit(data.id);
+
+      return new SuccessResponse(
+        `audit of ${name} fetched successfully`,
+        result,
+      );
+    }
+
+    @MessagePattern(SubjectFactory.buildSubject(messageType, 'getAudits'))
+    @UseList(filterPagination)
+    @ExtendedSerializer(listSerializer)
+    @Authentication(true)
+    @Authorization(`audit:read@auth`)
+    async getAudits(@Context() ctx: IContext) {
+      const { result, meta } = await this._usecase.getAudits(ctx);
+
+      return new SuccessResponse(`${name} fetched successfully`, result, meta);
+    }
+
+    @MessagePattern(SubjectFactory.buildSubject(messageType, 'listDropdown'))
+    @Authentication(true)
+    @Authorization(`${rolePrefix}:read@auth`)
+    async listDropdown(@Context() ctx: IContext) {
+      const result = await this._usecase.listDropdown(ctx);
+
+      return new SuccessResponse(`${name} fetched successfully`, result);
+    }
+
+    @MessagePattern(SubjectFactory.buildSubject(messageType, 'listPagination'))
+    @UseList(filterPagination)
+    @ExtendedSerializer(listSerializer)
+    @Authentication(true)
+    @Authorization(`${rolePrefix}:read@auth`)
+    async listPagination(@Context() ctx: IContext) {
+      const { result, meta } = await this._usecase.listPagination(ctx);
+
+      return new SuccessResponse(`${name} fetched successfully`, result, meta);
+    }
+
+    @MessagePattern(SubjectFactory.buildSubject(messageType, 'listCursor'))
+    @UseList(filterCursor)
+    @ExtendedSerializer(listSerializer)
+    @Authentication(true)
+    @Authorization(`${rolePrefix}:read@auth`)
+    async listCursor(@Context() ctx: IContext) {
+      const { meta, result } = await this._usecase.listCursor(ctx);
+
+      return new SuccessResponse(`${name} fetched successfully`, result, meta);
+    }
+
+    @MessagePattern(SubjectFactory.buildSubject(messageType, 'upsert'))
+    @ExtendedSerializer(upsertSerializer)
+    @Authentication(true)
+    @Authorization(`${rolePrefix}:create@auth`, `${rolePrefix}:update@auth`)
+    async upsert(@Context() ctx: IContext, data: UpsertBody) {
+      const result = await this._usecase.upsert(ctx, data);
+
+      return new SuccessResponse(`${name} save successfully`, result);
+    }
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'get'))
     @ExtendedSerializer(getSerializer)
