@@ -5,7 +5,6 @@ import { BaseUseCase } from '../domain/usecase/base.usecase';
 import { SuccessResponse } from '../frameworks/shared/responses/success.response';
 import { IContext } from '../frameworks/shared/interceptors/context.interceptor';
 import { ExtendedSerializer } from '../frameworks/shared/decorators/serializer.decorator';
-import { Authentication } from '../frameworks/shared/decorators/authentication.decorator';
 import { Authorization } from '../frameworks/shared/decorators/authorization.decorator';
 import { Context } from '../frameworks/shared/decorators/context.decorator';
 import { UseList } from '../frameworks/shared/decorators/uselist.decorator';
@@ -53,7 +52,6 @@ export function MessagingControllerFactory<
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'getAudit'))
     @ExtendedSerializer(getSerializer)
-    @Authentication(true)
     @Authorization(`audit:read@auth`)
     async getAudit(data: { id: string }) {
       const result = await this._usecase.getAudit(data.id);
@@ -67,7 +65,6 @@ export function MessagingControllerFactory<
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'getAudits'))
     @UseList(FilterPaginationAuditQueryValidator)
     @ExtendedSerializer(ListAuditSerializer)
-    @Authentication(true)
     @Authorization(`audit:read@auth`)
     async getAudits(@Context() ctx: IContext) {
       const { result, meta } = await this._usecase.getAudits(ctx);
@@ -76,7 +73,6 @@ export function MessagingControllerFactory<
     }
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'listDropdown'))
-    @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
     async listDropdown(@Context() ctx: IContext) {
       const result = await this._usecase.listDropdown(ctx);
@@ -87,7 +83,6 @@ export function MessagingControllerFactory<
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'listPagination'))
     @UseList(listPaginationQuery)
     @ExtendedSerializer(listSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
     async listPagination(@Context() ctx: IContext) {
       const { result, meta } = await this._usecase.listPagination(ctx);
@@ -98,7 +93,6 @@ export function MessagingControllerFactory<
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'listCursor'))
     @UseList(listCursorQuery)
     @ExtendedSerializer(listSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
     async listCursor(@Context() ctx: IContext) {
       const { meta, result } = await this._usecase.listCursor(ctx);
@@ -108,7 +102,6 @@ export function MessagingControllerFactory<
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'upsert'))
     @ExtendedSerializer(upsertSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:create@auth`, `${rolePrefix}:update@auth`)
     async upsert(@Context() ctx: IContext, data: UpsertBody) {
       const result = await this._usecase.upsert(ctx, data);
@@ -118,7 +111,6 @@ export function MessagingControllerFactory<
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'get'))
     @ExtendedSerializer(getSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
     async get(@Context() ctx: IContext, data: { id: string }) {
       const result = await this._usecase.getById(ctx, data.id);
@@ -128,7 +120,6 @@ export function MessagingControllerFactory<
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'list'))
     @ExtendedSerializer(listSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
     async list(@Context() ctx: IContext, _data: any) {
       const result = await this._usecase.listPagination(ctx);
@@ -138,7 +129,6 @@ export function MessagingControllerFactory<
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'create'))
     @ExtendedSerializer(createSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:create@auth`)
     async create(@Context() ctx: IContext, data: CreateBody) {
       const result = await this._usecase.create(ctx, data);
@@ -148,7 +138,6 @@ export function MessagingControllerFactory<
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'update'))
     @ExtendedSerializer(updateSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:update@auth`)
     async update(@Context() ctx: IContext, data: { id: string } & UpdateBody) {
       const { id, ...body } = data;
@@ -159,7 +148,6 @@ export function MessagingControllerFactory<
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'delete'))
     @ExtendedSerializer(deleteSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:delete@auth`)
     async delete(@Context() ctx: IContext, data: { id: string }) {
       const result = await this._usecase.delete(ctx, data.id);
@@ -169,7 +157,6 @@ export function MessagingControllerFactory<
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'deleteBatch'))
     @ExtendedSerializer(deleteSerializer)
-    @Authentication(true)
     @Authorization(`${rolePrefix}:delete@auth`)
     async deleteBatch(@Context() ctx: IContext, data: DeleteBatchBody) {
       const result = await this._usecase.deleteBatch(ctx, data);
