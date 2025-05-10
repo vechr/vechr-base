@@ -9,6 +9,10 @@ import { Authentication } from '../frameworks/shared/decorators/authentication.d
 import { Authorization } from '../frameworks/shared/decorators/authorization.decorator';
 import { Context } from '../frameworks/shared/decorators/context.decorator';
 import { UseList } from '../frameworks/shared/decorators/uselist.decorator';
+import {
+  FilterPaginationAuditQueryValidator,
+  ListAuditSerializer,
+} from '../domain/entities/audit.entity';
 
 /**
  * ## Factory Messaging Controller Generator
@@ -35,14 +39,14 @@ export function MessagingControllerFactory<
   name: string,
   messageType: string,
   rolePrefix: string,
-  filterPagination: Type,
-  filterCursor: Type,
-  getSerializer: Type,
   listSerializer: Type,
+  listPaginationQuery: Type,
+  listCursorQuery: Type,
+  upsertSerializer: Type,
   createSerializer: Type,
+  getSerializer: Type,
   updateSerializer: Type,
   deleteSerializer: Type,
-  upsertSerializer: Type,
 ) {
   class BaseMessagingController {
     public _usecase: BaseUseCase;
@@ -61,8 +65,8 @@ export function MessagingControllerFactory<
     }
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'getAudits'))
-    @UseList(filterPagination)
-    @ExtendedSerializer(listSerializer)
+    @UseList(FilterPaginationAuditQueryValidator)
+    @ExtendedSerializer(ListAuditSerializer)
     @Authentication(true)
     @Authorization(`audit:read@auth`)
     async getAudits(@Context() ctx: IContext) {
@@ -81,7 +85,7 @@ export function MessagingControllerFactory<
     }
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'listPagination'))
-    @UseList(filterPagination)
+    @UseList(listPaginationQuery)
     @ExtendedSerializer(listSerializer)
     @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
@@ -92,7 +96,7 @@ export function MessagingControllerFactory<
     }
 
     @MessagePattern(SubjectFactory.buildSubject(messageType, 'listCursor'))
-    @UseList(filterCursor)
+    @UseList(listCursorQuery)
     @ExtendedSerializer(listSerializer)
     @Authentication(true)
     @Authorization(`${rolePrefix}:read@auth`)
