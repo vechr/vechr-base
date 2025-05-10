@@ -8,9 +8,29 @@ import { HealthModule } from '@/frameworks/health/health.module';
 import { ConfigRegistryService } from './domain/usecases/services/config-registry.service';
 import { NatsMessagingAdapter } from './domain/usecases/adapter/nats-messaging.adapter';
 import { MESSAGING_ADAPTER } from './domain/entities/messaging-adapter.interface';
+import { Transport } from '@nestjs/microservices';
+import { ClientsModule } from '@nestjs/microservices';
+import baseConfig from '@/config/base.config';
 
 @Module({
-  imports: [HealthModule],
+  imports: [
+    ClientsModule.register([
+      {
+        name: baseConfig.nats.service,
+        transport: Transport.NATS,
+        options: {
+          servers: [baseConfig.nats.url],
+          maxReconnectAttempts: 10,
+          tls: {
+            caFile: baseConfig.nats.ca,
+            keyFile: baseConfig.nats.key,
+            certFile: baseConfig.nats.cert,
+          },
+        },
+      },
+    ]),
+    HealthModule,
+  ],
   controllers: [SystemControlController, SystemMonitorController],
   providers: [
     SystemControlHandler,
