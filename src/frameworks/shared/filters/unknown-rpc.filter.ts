@@ -12,6 +12,12 @@ import { log } from '../utils/log.util';
 @Catch()
 export class UnknownRpcExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
+    // Check if the request is RPC
+    const type = host.getType();
+    if (type !== 'rpc') {
+      return;
+    }
+
     if (!(exception instanceof RpcException)) {
       log.error('Unhandled RPC Error!', exception);
     } else {

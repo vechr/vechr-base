@@ -9,6 +9,12 @@ export class ContextRpcInterceptor implements NestInterceptor {
   constructor(private readonly jwtService: JwtService) {}
 
   intercept(ctx: ExecutionContext, next: CallHandler): Observable<any> {
+    // Check if the request is RPC
+    const type = ctx.getType();
+    if (type !== 'rpc') {
+      return next.handle();
+    }
+
     const rpcContext = ctx.switchToRpc();
     const data = rpcContext.getData();
     const natsContext = rpcContext.getContext<NatsContext>();
