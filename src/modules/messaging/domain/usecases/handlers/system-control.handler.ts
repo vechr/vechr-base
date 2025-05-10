@@ -9,12 +9,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as os from 'os';
 import { ConfigRegistryService } from '@/modules/messaging/domain/usecases/services/config-registry.service';
 import { HandlerRegistryService } from '@/modules/messaging/domain/usecases/services/handler-registry.service';
-import { MessageHandler } from './message.handler';
+import { MessagingHandler } from './messaging.handler';
 import { SubjectFactory } from '../factories/subject.factory';
 import { SYSTEM_CONTROL_MESSAGE_TYPE } from './constant.handler';
 
 @Injectable()
-export class SystemControlHandler extends MessageHandler {
+export class SystemControlHandler extends MessagingHandler {
   constructor(
     @Inject(MESSAGING_ADAPTER)
     private readonly messagingAdapter: IMessagingAdapter,

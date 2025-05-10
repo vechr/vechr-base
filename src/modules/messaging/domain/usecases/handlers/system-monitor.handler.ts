@@ -1,6 +1,6 @@
 import { HandlerRegistryService } from '@/modules/messaging/domain/usecases/services/handler-registry.service';
 import { Injectable } from '@nestjs/common';
-import { MessageHandler } from './message.handler';
+import { MessagingHandler } from './messaging.handler';
 import { HealthService } from '@/frameworks/health/health.service';
 import { log } from '@/frameworks';
 import { SYSTEM_MONITOR_MESSAGE_TYPE } from './constant.handler';
@@ -12,7 +12,7 @@ interface IHealthResponse {
 }
 
 @Injectable()
-export class SystemMonitorHandler extends MessageHandler {
+export class SystemMonitorHandler extends MessagingHandler {
   constructor(
     private readonly healthService: HealthService,
     handlerRegistry: HandlerRegistryService,
