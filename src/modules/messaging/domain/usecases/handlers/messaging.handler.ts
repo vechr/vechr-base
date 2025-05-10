@@ -6,7 +6,7 @@ import {
 } from '@/frameworks';
 import { HandlerRegistryService } from '@/modules/messaging/domain/usecases/services/handler-registry.service';
 
-export class MessageHandler {
+export class MessagingHandler {
   constructor(protected readonly handlerRegistry: HandlerRegistryService) {}
 
   public messageType: string = '';
