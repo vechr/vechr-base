@@ -16,29 +16,9 @@ const { fromExtractors, fromAuthHeaderAsBearerToken } = ExtractJwt;
 export class AuthStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: (request) => {
-        // Check if it's an RPC request
-        if (request?.getType?.() === 'rpc') {
-          const data = request.getData();
-          const headers = request.getContext()?.getHeaders?.();
-
-          // Try to get token from RPC data or headers
-          return (
-            data?.accessToken ||
-            data?.token ||
-            headers?.authorization?.split(' ')[1] ||
-            headers?.['x-access-token'] ||
-            headers?.['access-token']
-          );
-        }
-
-        // For HTTP requests, use the default extractors
-        return (
-          fromExtractors([cookieExtractor, fromAuthHeaderAsBearerToken()])(
-            request,
-          ) ?? ExtractJwt.fromAuthHeaderAsBearerToken()(request)
-        );
-      },
+      jwtFromRequest:
+        fromExtractors([cookieExtractor, fromAuthHeaderAsBearerToken()]) ??
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: baseConfig.jwt.secret,
     });
   }
