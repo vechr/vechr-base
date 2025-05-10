@@ -1,7 +1,6 @@
 /* The ReadHelper class provides methods for reading data from a database using Prisma with features
 like pagination, cursor-based navigation, and caching. */
 import { Cache } from 'cache-manager';
-import { ExtendedNotFoundException } from '../../frameworks/shared/exceptions/common.exception';
 import {
   IListCursorResult,
   IListPaginationResult,
@@ -101,9 +100,7 @@ export class ReadHelper {
       });
 
       if (!data) {
-        throw new ExtendedNotFoundException({
-          message: `${entity} with id ${id} is not found!`,
-        });
+        throw new Error(`${entity} with id ${id} is not found!`);
       }
 
       await cacheManager.set(id, data);

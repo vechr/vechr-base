@@ -7,6 +7,10 @@ import {
   UnknownException,
 } from '../../frameworks/shared/exceptions/common.exception';
 import {
+  ERpcErrorCommonCode,
+  RpcUnknownException,
+} from '../../frameworks/shared/exceptions/common.rpc.exception';
+import {
   DropdownEntity,
   IListCursorResult,
   IListPaginationResult,
@@ -16,6 +20,8 @@ import { BaseRepository } from '../../data/base.repository';
 import { Prisma } from '@prisma/client';
 import { Audit, AuditList } from '../entities/audit.entity';
 import { TraceService } from 'nestjs-otel';
+
+type ContextType = 'http' | 'rpc';
 
 /**
  * ## BaseUsecase
@@ -39,6 +45,8 @@ export abstract class BaseUseCase<
   CreateMany extends Record<string, any> = object,
   Update extends Record<string, any> = object,
 > {
+  protected contextType: ContextType = 'http';
+
   constructor(
     protected readonly repository: BaseRepository<
       Entity,
@@ -51,7 +59,31 @@ export abstract class BaseUseCase<
     >,
     protected db: PrismaService,
     protected readonly traceService: TraceService,
-  ) {}
+    contextType?: ContextType,
+  ) {
+    if (contextType) {
+      this.contextType = contextType;
+    }
+  }
+
+  protected handleError(error: any, message: string): never {
+    if (error instanceof PrismaClientKnownRequestError) {
+      log.error(error.message);
+      if (this.contextType === 'rpc') {
+        throw new RpcUnknownException({
+          code: ERpcErrorCommonCode.INTERNAL_SERVER_ERROR,
+          message: message,
+          params: { exception: error.message },
+        });
+      }
+      throw new UnknownException({
+        code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
+        message: message,
+        params: { exception: error.message },
+      });
+    }
+    throw error;
+  }
 
   /**
    * This TypeScript function asynchronously retrieves a list of dropdown options from a repository,
@@ -81,15 +113,10 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during retrieve a simple list!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      return this.handleError(
+        error,
+        'Error unexpected during retrieve a simple list!',
+      );
     }
   }
 
@@ -152,15 +179,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during upsert the data!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during upsert the data!');
     }
   }
 
@@ -195,15 +214,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during create the data!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during create the data!');
     }
   }
 
@@ -241,15 +252,10 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during retrieve the information!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(
+        error,
+        'Error unexpected during retrieve the information!',
+      );
     }
   }
 
@@ -284,15 +290,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during change the data!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during change the data!');
     }
   }
 
@@ -326,15 +324,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during delete the datas!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during delete the datas!');
     }
   }
 
@@ -392,15 +382,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during delete the data!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during delete the data!');
     }
   }
 
@@ -435,15 +417,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during retrieve a list!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during retrieve a list!');
     }
   }
 
@@ -482,15 +456,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during retrieve a list!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during retrieve a list!');
     }
   }
 
@@ -518,15 +484,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during retrieve a list!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during retrieve a list!');
     }
   }
 
@@ -552,15 +510,7 @@ export abstract class BaseUseCase<
       return result;
     } catch (error: any) {
       span?.setStatus({ code: 2, message: error.message });
-      if (error instanceof PrismaClientKnownRequestError) {
-        log.error(error.message);
-        throw new UnknownException({
-          code: EErrorCommonCode.INTERNAL_SERVER_ERROR,
-          message: `Error unexpected during retrieve a list!`,
-          params: { exception: error.message },
-        });
-      }
-      throw error;
+      this.handleError(error, 'Error unexpected during retrieve a list!');
     }
   }
 }

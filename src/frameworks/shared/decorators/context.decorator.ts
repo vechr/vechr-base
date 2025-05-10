@@ -3,16 +3,33 @@ import { IContext } from '../interceptors/context.interceptor';
 
 export const Context = createParamDecorator(
   (data: string, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest<
+    // Try HTTP context first
+    const httpRequest = ctx.switchToHttp().getRequest<
       Request & {
         customContext: IContext;
       }
     >();
 
-    if (data) {
-      return request.customContext[data];
+    if (httpRequest?.customContext) {
+      if (data) {
+        return httpRequest.customContext[data];
+      }
+      return httpRequest.customContext;
     }
 
-    return request.customContext;
+    // If not HTTP, try RPC context
+    const rpcContext = ctx.switchToRpc();
+    const messageData = rpcContext.getData<{
+      customContext: IContext;
+    }>();
+
+    if (messageData?.customContext) {
+      if (data) {
+        return messageData.customContext[data];
+      }
+      return messageData.customContext;
+    }
+
+    return null;
   },
 );

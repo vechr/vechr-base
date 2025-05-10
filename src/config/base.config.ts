@@ -62,6 +62,21 @@ const config: BaseConfig = {
       ttl: env.get('REDIS_TTL').default(300).asInt(),
     },
   },
+  subject: {
+    level1_company: env.get('LEVEL1_COMPANY').required().asString(),
+    level2_facility: env.get('LEVEL2_FACILITY').required().asString(),
+    level3_productionLine: env
+      .get('LEVEL3_PRODUCTION_LINE')
+      .required()
+      .asString(),
+    level4_environment: env.get('LEVEL4_ENVIRONMENT').required().asString(),
+    level5_serviceCategory: env
+      .get('LEVEL5_SERVICE_CATEGORY')
+      .required()
+      .asString(),
+    level6_serviceName: env.get('LEVEL6_SERVICE_NAME').required().asString(),
+    level9_instanceId: env.get('LEVEL9_INSTANCE_ID').required().asString(),
+  },
 };
 
 export const loadBaseConfig = (): BaseConfig => {

@@ -6,23 +6,14 @@ import {
   Version,
   VERSION_NEUTRAL,
 } from '@nestjs/common';
-import {
-  HealthCheckService,
-  HealthCheck,
-  PrismaHealthIndicator,
-  HealthCheckResult,
-} from '@nestjs/terminus';
+import { HealthCheck } from '@nestjs/terminus';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { PrismaService } from '../data-services/prisma/prisma.service';
+import { HealthService } from './health.service';
 
 @ApiTags('Health')
 @Controller()
 export class HealthController {
-  constructor(
-    private health: HealthCheckService,
-    private prismaHealth: PrismaHealthIndicator,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private healthService: HealthService) {}
 
   @Version(VERSION_NEUTRAL)
   @Get('health')
@@ -32,7 +23,7 @@ export class HealthController {
   @HealthCheck()
   @HttpCode(HttpStatus.OK)
   check() {
-    return this.healthCheck();
+    return this.healthService.healthCheck();
   }
 
   @Version(VERSION_NEUTRAL)
@@ -43,15 +34,6 @@ export class HealthController {
   @HealthCheck()
   @HttpCode(HttpStatus.OK)
   check2() {
-    return this.healthCheck();
-  }
-
-  private async healthCheck(): Promise<HealthCheckResult> {
-    return this.health.check([
-      () =>
-        this.prismaHealth.pingCheck('prisma-database', this.prisma, {
-          timeout: 3000,
-        }),
-    ]);
+    return this.healthService.healthCheck();
   }
 }
