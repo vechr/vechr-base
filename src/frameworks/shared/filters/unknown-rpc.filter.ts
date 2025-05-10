@@ -15,7 +15,7 @@ export class UnknownRpcExceptionFilter implements ExceptionFilter {
     // Check if the request is RPC
     const type = host.getType();
     if (type !== 'rpc') {
-      return;
+      throw exception; // Re-throw the exception for HTTP filter to handle
     }
 
     if (!(exception instanceof RpcException)) {

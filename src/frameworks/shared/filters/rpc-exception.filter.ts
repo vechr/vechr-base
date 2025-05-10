@@ -11,7 +11,7 @@ export class ExtendedRpcExceptionFilter
     // Check if the request is RPC
     const type = host.getType();
     if (type !== 'rpc') {
-      return throwError(() => exception);
+      return throwError(() => exception); // Re-throw the exception for HTTP filter to handle
     }
 
     if (exception instanceof BaseRpcException) {
