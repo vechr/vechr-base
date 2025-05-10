@@ -31,10 +31,10 @@ import {
  * @returns BaseMessagingController
  */
 export function MessagingControllerFactory<
+  UpsertBody,
   CreateBody,
   UpdateBody,
-  DeleteBody extends { ids: string[] },
-  UpsertBody,
+  DeleteBatchBody extends { ids: string[] },
 >(
   name: string,
   messageType: string,
@@ -171,7 +171,7 @@ export function MessagingControllerFactory<
     @ExtendedSerializer(deleteSerializer)
     @Authentication(true)
     @Authorization(`${rolePrefix}:delete@auth`)
-    async deleteBatch(@Context() ctx: IContext, data: DeleteBody) {
+    async deleteBatch(@Context() ctx: IContext, data: DeleteBatchBody) {
       const result = await this._usecase.deleteBatch(ctx, data);
 
       return new SuccessResponse(`${name} batch deleted successfully`, result);
