@@ -2,6 +2,15 @@
 
 A NestJS-based foundation package for building scalable applications. This package provides a set of common utilities, configurations, and best practices for NestJS applications.
 
+## Table of Contents
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Features](#features)
+- [Framework Implementation](#framework-implementation)
+- [Messaging with NATS](#messaging-with-nats)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Installation
 
 ```bash
@@ -40,260 +49,124 @@ npm login --registry=https://npm.pkg.github.com
 - Logging with Winston
 - And more...
 
+## Framework Implementation
+
+The package includes a comprehensive shared framework implementation that provides common utilities and patterns for building NestJS applications. Here's an overview of the available components:
+
+### Shared Framework Structure
+
+```
+src/frameworks/shared/
+├── controllers/     # Base controllers and RPC implementations
+├── decorators/      # Custom decorators for metadata and configuration
+├── exceptions/      # Custom exception handlers
+├── filters/         # Exception filters
+├── guards/          # Authentication and authorization guards
+├── interceptors/    # Request/response interceptors
+├── middlewares/     # Custom middleware implementations
+├── pipes/           # Data transformation and validation pipes
+├── responses/       # Standardized response formats
+└── utils/           # Utility functions and helpers
+```
+
+### Key Components
+
+#### Controllers
+- Base controllers with common CRUD operations
+- RPC-extended controllers for microservice communication
+
+#### Decorators
+- Custom decorators for metadata handling
+- Configuration decorators
+- Authentication decorators
+
+#### Guards
+- Authentication guards
+- Role-based access control
+- Permission guards
+
+#### Interceptors
+- Request/response transformation
+- Logging interceptors
+- Error handling interceptors
+
+#### Middlewares
+- Request validation
+- Authentication middleware
+- Logging middleware
+
+#### Pipes
+- Data validation pipes
+- Transformation pipes
+- Custom validation rules
+
+#### Responses
+- Standardized response formats
+- Error response handling
+- Success response templates
+
+### Usage Example
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { RpcExtendedController } from '@vechr/vechr-base';
+
+@RpcExtendedController('service')
+export class ExampleController {
+  @Get()
+  async getData() {
+    // Your implementation
+  }
+}
+```
+
 ## Messaging with NATS
 
 The package includes built-in support for NATS messaging with authentication and context handling. Here are some examples of how to interact with the messaging endpoints using NATS CLI:
 
 ### Basic Request-Reply Pattern
-
 ```bash
-# Get an item by ID
-nats req 'vechr.{service}.get' '{"id": "123"}' --header "x-access-token: your-jwt-token"
-
-# Get audit details by ID
-nats req 'vechr.{service}.getAudit' '{"id": "123"}' --header "x-access-token: your-jwt-token"
-
-# List audits with pagination
-nats req 'vechr.{service}.getAudits' '{
-  "filters": {
-    "pagination": {
-      "page": 1,
-      "limit": 10
-    }
-  }
-}' --header "x-access-token: your-jwt-token"
-
-# Get dropdown list (id and name only)
-nats req 'vechr.{service}.listDropdown' '{}' --header "x-access-token: your-jwt-token"
-
-# List with page-based pagination
-nats req 'vechr.{service}.listPagination' '{
-  "filters": {
-    "pagination": {
-      "page": 1,
-      "limit": 10
-    },
-    "sort": {
-      "by": "createdAt",
-      "mode": "DESC"
-    }
-  }
-}' --header "x-access-token: your-jwt-token"
-
-# List with cursor-based pagination
-nats req 'vechr.{service}.listCursor' '{
-  "filters": {
-    "pagination": {
-      "cursor": "last-item-id",
-      "limit": 10
-    },
-    "sort": {
-      "by": "createdAt",
-      "mode": "DESC"
-    }
-  }
-}' --header "x-access-token: your-jwt-token"
-
-# Create or update by uniqueness
-nats req 'vechr.{service}.upsert' '{
-  "name": "Example",
-  "description": "Test item"
-}' --header "x-access-token: your-jwt-token"
-
-# Create a new item
-nats req 'vechr.{service}.create' '{"name": "Example", "description": "Test item"}' --header "x-access-token: your-jwt-token"
-
-# Update an item
-nats req 'vechr.{service}.update' '{"id": "123", "name": "Updated Name"}' --header "x-access-token: your-jwt-token"
-
-# Delete an item
-nats req 'vechr.{service}.delete' '{"id": "123"}' --header "x-access-token: your-jwt-token"
-
-# Batch delete items
-nats req 'vechr.{service}.deleteBatch' '{"ids": ["123", "456"]}' --header "x-access-token: your-jwt-token"
+nats --tlsca=./certificate/self-signed/yourCA.pem \
+     --tlscert=./certificate/self-signed/nats/yourCert.crt \
+     --tlskey=./certificate/self-signed/nats/yourKey.key \
+     --server=nats://localhost:4222 \
+     --trace \
+     req "Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getSystemProperties.A001" \
+     '{}' \
+     -H "Authorization: Bearer <your-access-token>" \
+     -H "refresh-token: <your-refresh-token>"
 ```
 
-### List Query with Pagination and Sorting
+### Example Endpoints
 
-The package includes a `ListQueryRpcPipe` for handling list queries with pagination and sorting. Here's how to use it:
-
-1. Define your DTO with the correct structure:
-```typescript
-class UserListDto {
-  filters: {
-    pagination: {
-      page: number;
-      limit: number;
-    };
-    sort: {
-      by: string;
-      mode: ESortMode;
-    };
-    field?: {
-      status?: string;
-      role?: string;
-    };
-  };
-}
+#### System Control
+```
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.exit.A001`
+Body: `'{}'`
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getConfiguration.A001`
+Body: `'{"body": {"name": "default"}}'` (default, system, environment)
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getConfigurationNames.A001`
+Body: `'{}'`
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getConfigurationParameter.A001`
+Body: `'{"body": {"paramName": "NATS_URL"}}'`
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getControlList.A001`
+Body: `'{"body": {"handlerType": "SystemMonitor"}}'`
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getManifestData.A001`
+Body: `'{}'`
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getMemoryInfo.A001`
+Body: `'{}'`
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getStatus.A001`
+Body: `'{}'`
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.getSystemProperties.A001`
+Body: `'{}'`
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemControl.restart.A001`
+Body: `'{}'`
 ```
 
-2. Use the pipe in your controller:
-```typescript
-@Controller()
-export class UserController {
-  constructor(private readonly userService: IUserService) {}
-
-  @MessagePattern('vechr.users.list')
-  @UsePipes(new ListQueryRpcPipe(UserListDto))
-  async list(
-    @Context() ctx: IContext,
-    @Payload() data: UserListDto,
-  ): Promise<SuccessResponse> {
-    const result = await this.userService.list(ctx, data.filters);
-    return new SuccessResponse('Users fetched successfully', result);
-  }
-}
+#### System Monitor
 ```
-
-3. Call the endpoint using NATS CLI:
-```bash
-# List with cursor-based pagination
-nats req 'vechr.{service}.list' '{
-  "filters": {
-    "pagination": {
-      "cursor": "last-item-id",
-      "limit": 10
-    },
-    "sort": {
-      "by": "createdAt",
-      "mode": "DESC"
-    }
-  }
-}' --header "x-access-token: your-jwt-token"
-
-# List with offset-based pagination
-nats req 'vechr.{service}.list' '{
-  "filters": {
-    "pagination": {
-      "page": 1,
-      "limit": 10
-    },
-    "sort": {
-      "by": "name",
-      "mode": "ASC"
-    }
-  }
-}' --header "x-access-token: your-jwt-token"
-
-# List with field filters
-nats req 'vechr.{service}.list' '{
-  "filters": {
-    "pagination": {
-      "page": 1,
-      "limit": 10
-    },
-    "sort": {
-      "by": "createdAt",
-      "mode": "DESC"
-    },
-    "field": {
-      "status": "active",
-      "type": "user"
-    }
-  }
-}' --header "x-access-token: your-jwt-token"
-```
-
-The pipe provides:
-- Automatic validation of pagination, sorting, and field filters
-- Type safety using class-transformer and class-validator
-- Integration with your context system for authentication
-- Standard error responses for validation failures
-
-Example response:
-```json
-{
-  "success": true,
-  "message": "Users fetched successfully",
-  "data": {
-    "items": [...],
-    "total": 100,
-    "page": 1,
-    "limit": 10
-  }
-}
-```
-
-Example error response (if validation fails):
-```json
-{
-  "success": false,
-  "message": "Validation failed",
-  "code": "R400",
-  "params": [
-    {
-      "field": "filters.pagination.limit",
-      "value": "invalid",
-      "errors": "limit must be a number"
-    }
-  ]
-}
-```
-
-### Authentication Headers
-
-You can provide the JWT token in several ways:
-
-```bash
-# Using x-access-token header
-nats req 'vechr.{service}.get' '{"id": "123"}' --header "x-access-token: your-jwt-token"
-
-# Using authorization header
-nats req 'vechr.{service}.get' '{"id": "123"}' --header "authorization: Bearer your-jwt-token"
-
-# Using access-token header
-nats req 'vechr.{service}.get' '{"id": "123"}' --header "access-token: your-jwt-token"
-```
-
-### Message Format
-
-The message payload should be a JSON object. For example:
-
-```json
-{
-  "id": "123",
-  "name": "Example",
-  "description": "Test item"
-}
-```
-
-### Response Format
-
-All responses follow a standard format:
-
-```json
-{
-  "success": true,
-  "message": "Item fetched successfully",
-  "data": {
-    // Response data here
-  }
-}
-```
-
-### Error Handling
-
-Error responses include detailed information:
-
-```json
-{
-  "success": false,
-  "message": "Error message",
-  "code": "ERROR_CODE",
-  "params": {
-    // Additional error details
-  }
-}
+Subject: `Autocar.ID_KWG.Molding.Dev.Service.Auth.SystemMonitor.health.A001`
+Body: `'{}'`
 ```
 
 ## Contributing

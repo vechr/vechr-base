@@ -1,33 +1,57 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { IContext } from '../interceptors/context.interceptor';
 
+const getHttpContext = (
+  ctx: ExecutionContext,
+  data?: string,
+): IContext | null => {
+  const httpRequest = ctx.switchToHttp().getRequest<
+    Request & {
+      customContext: IContext;
+    }
+  >();
+
+  if (httpRequest?.customContext) {
+    if (data) {
+      return httpRequest.customContext[data];
+    }
+    return httpRequest.customContext;
+  }
+
+  return null;
+};
+
+const getRpcContext = (
+  ctx: ExecutionContext,
+  data?: string,
+): IContext | null => {
+  const rpcContext = ctx.switchToRpc();
+  const contextData = rpcContext.getData<{
+    customContext: IContext;
+  }>();
+
+  if (contextData?.customContext) {
+    if (data) {
+      return contextData.customContext[data];
+    }
+    return contextData.customContext;
+  }
+
+  return null;
+};
+
 export const Context = createParamDecorator(
   (data: string, ctx: ExecutionContext) => {
-    // Try HTTP context first
-    const httpRequest = ctx.switchToHttp().getRequest<
-      Request & {
-        customContext: IContext;
-      }
-    >();
+    const type = ctx.getType();
 
-    if (httpRequest?.customContext) {
-      if (data) {
-        return httpRequest.customContext[data];
-      }
-      return httpRequest.customContext;
+    // Try HTTP context first
+    if (type === 'http') {
+      return getHttpContext(ctx, data);
     }
 
-    // If not HTTP, try RPC context
-    const rpcContext = ctx.switchToRpc();
-    const messageData = rpcContext.getData<{
-      customContext: IContext;
-    }>();
-
-    if (messageData?.customContext) {
-      if (data) {
-        return messageData.customContext[data];
-      }
-      return messageData.customContext;
+    // Try RPC context
+    if (type === 'rpc') {
+      return getRpcContext(ctx, data);
     }
 
     return null;

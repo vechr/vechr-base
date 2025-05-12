@@ -380,10 +380,6 @@ export class SystemControlHandler extends MessagingHandler {
         'Status retrieved successfully',
         {
           status: 'running',
-          gateway: {
-            type: 'default',
-            status: 'connected',
-          },
           messaging: {
             type: this.messagingAdapter.constructor.name,
             status: 'connected',
