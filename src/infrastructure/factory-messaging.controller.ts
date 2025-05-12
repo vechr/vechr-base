@@ -11,6 +11,7 @@ import {
 } from '../domain/entities/audit.entity';
 import { LoggedMessagePattern, RpcAuth, RpcUseList } from '@/frameworks';
 import { IDValidator } from '@/domain';
+import { OtelMethodCounter } from 'nestjs-otel';
 
 /**
  * ## Factory Messaging Controller Generator
@@ -52,6 +53,7 @@ export function MessagingControllerFactory<
     @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'getAudit'))
     @ExtendedSerializer(getSerializer)
     @RpcAuth(`audit:read@auth`)
+    @OtelMethodCounter()
     async getAudit(@Body() data: IDValidator) {
       const result = await this._usecase.getAudit(data.id);
 
@@ -65,6 +67,7 @@ export function MessagingControllerFactory<
     @RpcUseList(FilterPaginationAuditQueryValidator)
     @ExtendedSerializer(ListAuditSerializer)
     @RpcAuth(`audit:read@auth`)
+    @OtelMethodCounter()
     async getAudits(@Context() ctx: IContext) {
       const { result, meta } = await this._usecase.getAudits(ctx);
 
@@ -75,6 +78,7 @@ export function MessagingControllerFactory<
       SubjectFactory.buildSubject(messageType, 'listDropdown'),
     )
     @RpcAuth(`${rolePrefix}:read@auth`)
+    @OtelMethodCounter()
     async listDropdown(@Context() ctx: IContext) {
       const result = await this._usecase.listDropdown(ctx);
 
@@ -87,6 +91,7 @@ export function MessagingControllerFactory<
     @RpcUseList(filterPagination)
     @ExtendedSerializer(listSerializer)
     @RpcAuth(`${rolePrefix}:read@auth`)
+    @OtelMethodCounter()
     async listPagination(@Context() ctx: IContext) {
       const { result, meta } = await this._usecase.listPagination(ctx);
 
@@ -99,6 +104,7 @@ export function MessagingControllerFactory<
     @RpcUseList(filterCursor)
     @ExtendedSerializer(listSerializer)
     @RpcAuth(`${rolePrefix}:read@auth`)
+    @OtelMethodCounter()
     async listCursor(@Context() ctx: IContext) {
       const { meta, result } = await this._usecase.listCursor(ctx);
 
@@ -108,6 +114,7 @@ export function MessagingControllerFactory<
     @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'upsert'))
     @ExtendedSerializer(upsertSerializer)
     @RpcAuth(`${rolePrefix}:create@auth`, `${rolePrefix}:update@auth`)
+    @OtelMethodCounter()
     async upsert(@Context() ctx: IContext, @Body() data: UpsertBody) {
       const result = await this._usecase.upsert(ctx, data);
 
@@ -117,6 +124,7 @@ export function MessagingControllerFactory<
     @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'create'))
     @ExtendedSerializer(createSerializer)
     @RpcAuth(`${rolePrefix}:create@auth`)
+    @OtelMethodCounter()
     async create(@Context() ctx: IContext, @Body() data: CreateBody) {
       const result = await this._usecase.create(ctx, data);
 
@@ -126,6 +134,7 @@ export function MessagingControllerFactory<
     @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'get'))
     @ExtendedSerializer(getSerializer)
     @RpcAuth(`${rolePrefix}:read@auth`)
+    @OtelMethodCounter()
     async get(@Context() ctx: IContext, @Body() data: IDValidator) {
       const result = await this._usecase.getById(ctx, data.id);
 
@@ -135,6 +144,7 @@ export function MessagingControllerFactory<
     @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'update'))
     @ExtendedSerializer(updateSerializer)
     @RpcAuth(`${rolePrefix}:update@auth`)
+    @OtelMethodCounter()
     async update(
       @Context() ctx: IContext,
       @Body() data: UpdateBody & IDValidator,
@@ -148,6 +158,7 @@ export function MessagingControllerFactory<
     @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'delete'))
     @ExtendedSerializer(deleteSerializer)
     @RpcAuth(`${rolePrefix}:delete@auth`)
+    @OtelMethodCounter()
     async delete(@Context() ctx: IContext, @Body() data: IDValidator) {
       const result = await this._usecase.delete(ctx, data.id);
 
@@ -159,6 +170,7 @@ export function MessagingControllerFactory<
     )
     @ExtendedSerializer(deleteSerializer)
     @RpcAuth(`${rolePrefix}:delete@auth`)
+    @OtelMethodCounter()
     async deleteBatch(@Context() ctx: IContext, @Body() data: DeleteBatchBody) {
       const result = await this._usecase.deleteBatch(ctx, data);
 

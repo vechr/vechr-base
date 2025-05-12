@@ -12,8 +12,10 @@ import {
   GetConfigurationValidator,
   GetControlListValidator,
 } from '../domain/usecases/entities/system-control.validator';
+import { OtelInstanceCounter, OtelMethodCounter } from 'nestjs-otel';
 
 @RpcExtendedController()
+@OtelInstanceCounter()
 @Controller()
 export class SystemControlController {
   constructor(private readonly systemControlHandler: SystemControlHandler) {}
@@ -22,6 +24,7 @@ export class SystemControlController {
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'exit'),
   )
   @RpcAuth(`system-control:write@auth`)
+  @OtelMethodCounter()
   async exit() {
     return this.systemControlHandler.exit();
   }
@@ -33,6 +36,7 @@ export class SystemControlController {
     ),
   )
   @RpcAuth(`system-control:read@auth`)
+  @OtelMethodCounter()
   async getConfiguration(@Body() data: GetConfigurationValidator) {
     return this.systemControlHandler.getConfiguration(data);
   }
@@ -44,6 +48,7 @@ export class SystemControlController {
     ),
   )
   @RpcAuth(`system-control:read@auth`)
+  @OtelMethodCounter()
   async getConfigurationNames() {
     return this.systemControlHandler.getConfigurationNames();
   }
@@ -55,6 +60,7 @@ export class SystemControlController {
     ),
   )
   @RpcAuth(`system-control:read@auth`)
+  @OtelMethodCounter()
   async getConfigurationParameter(
     @Body() data: GetConfigurationParameterValidator,
   ) {
@@ -65,6 +71,7 @@ export class SystemControlController {
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getControlList'),
   )
   @RpcAuth(`system-control:read@auth`)
+  @OtelMethodCounter()
   async getControlList(@Body() data: GetControlListValidator) {
     return this.systemControlHandler.getControlList(data);
   }
@@ -73,6 +80,7 @@ export class SystemControlController {
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getManifestData'),
   )
   @RpcAuth(`system-control:read@auth`)
+  @OtelMethodCounter()
   async getManifestData() {
     return this.systemControlHandler.getManifestData();
   }
@@ -81,6 +89,7 @@ export class SystemControlController {
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getMemoryInfo'),
   )
   @RpcAuth(`system-control:read@auth`)
+  @OtelMethodCounter()
   async getMemoryInfo() {
     return this.systemControlHandler.getMemoryInfo();
   }
@@ -89,6 +98,7 @@ export class SystemControlController {
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getStatus'),
   )
   @RpcAuth(`system-control:read@auth`)
+  @OtelMethodCounter()
   async getStatus() {
     return this.systemControlHandler.getStatus();
   }
@@ -100,6 +110,7 @@ export class SystemControlController {
     ),
   )
   @RpcAuth(`system-control:read@auth`)
+  @OtelMethodCounter()
   async getSystemProperties() {
     return this.systemControlHandler.getSystemProperties();
   }
@@ -108,6 +119,7 @@ export class SystemControlController {
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'restart'),
   )
   @RpcAuth(`system-control:write@auth`)
+  @OtelMethodCounter()
   async restart() {
     return this.systemControlHandler.restart();
   }
