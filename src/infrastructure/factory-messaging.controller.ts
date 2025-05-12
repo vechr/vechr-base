@@ -21,13 +21,12 @@ import { OtelMethodCounter } from 'nestjs-otel';
  * @param rolePrefix is used to specify the role prefix
  * @param filterPagination list pagination (validation pipe)
  * @param filterCursor list cursor (validation pipe)
- * @param getSerializer get by id (response)
  * @param listSerializer list (response)
+ * @param upsertSerializer upsert (response)
  * @param createSerializer create (response)
+ * @param getSerializer get by id (response)
  * @param updateSerializer update (response)
  * @param deleteSerializer delete (response)
- * @param upsertSerializer upsert (response)
- * @returns BaseMessagingController
  */
 export function MessagingControllerFactory<
   UpsertBody,
