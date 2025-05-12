@@ -18,8 +18,6 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { BaseUseCase } from '../domain/usecase/base.usecase';
-import { Authentication } from '../frameworks/shared/decorators/authentication.decorator';
-import { Authorization } from '../frameworks/shared/decorators/authorization.decorator';
 import { Context } from '../frameworks/shared/decorators/context.decorator';
 import { IContext } from '../frameworks/shared/interceptors/context.interceptor';
 import { SuccessResponse } from '../frameworks/shared/responses/success.response';
@@ -31,6 +29,7 @@ import {
   ListAuditSerializer,
   ListPaginationAuditQueryValidator,
 } from '../domain/entities/audit.entity';
+import { Auth } from '@/frameworks';
 
 /**
  * ## Factory Controller Generator
@@ -89,8 +88,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.OK)
     @ExtendedSerializer(getSerializer)
-    @Authentication(true)
-    @Authorization(`audit:read@auth`)
+    @Auth(`audit:read@auth`)
     @ApiParam({
       name: 'id',
       example: '05fcdf7e-d39c-40d7-aae8-c7bd27088428',
@@ -115,8 +113,7 @@ export function ControllerFactory<
     @UseList(FilterPaginationAuditQueryValidator)
     @ExtendedSerializer(ListAuditSerializer)
     @ApiFilterQuery('filters', ListPaginationAuditQueryValidator)
-    @Authentication(true)
-    @Authorization(`audit:read@auth`)
+    @Auth(`audit:read@auth`)
     public async getAudits(@Context() ctx: IContext) {
       const { result, meta } = await this._usecase.getAudits(ctx);
 
@@ -130,8 +127,7 @@ export function ControllerFactory<
         'Dropdown method, you can get list of items with return id and name only',
     })
     @HttpCode(HttpStatus.OK)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:read@auth`)
+    @Auth(`${rolePrefix}:read@auth`)
     @ApiQuery({ name: 'search', type: String, required: false })
     public async listDropdown(@Context() ctx: IContext) {
       const result = await this._usecase.listDropdown(ctx);
@@ -149,8 +145,7 @@ export function ControllerFactory<
     @UseList(filterPagination)
     @ExtendedSerializer(listSerializer)
     @ApiFilterQuery('filters', listPaginationQuery)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:read@auth`)
+    @Auth(`${rolePrefix}:read@auth`)
     public async listPagination(@Context() ctx: IContext) {
       const { result, meta } = await this._usecase.listPagination(ctx);
 
@@ -167,8 +162,7 @@ export function ControllerFactory<
     @UseList(filterCursor)
     @ExtendedSerializer(listSerializer)
     @ApiFilterQuery('filters', listCursorQuery)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:read@auth`)
+    @Auth(`${rolePrefix}:read@auth`)
     public async listCursor(@Context() ctx: IContext) {
       const { meta, result } = await this._usecase.listCursor(ctx);
 
@@ -183,8 +177,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.CREATED)
     @ExtendedSerializer(upsertSerializer)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:create@auth`, `${rolePrefix}:update@auth`)
+    @Auth(`${rolePrefix}:create@auth`, `${rolePrefix}:update@auth`)
     @ApiBody({ type: upsertBodyValidator })
     public async upsert(
       @Context() ctx: IContext,
@@ -202,8 +195,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.CREATED)
     @ExtendedSerializer(createSerializer)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:create@auth`)
+    @Auth(`${rolePrefix}:create@auth`)
     @ApiBody({ type: createBodyValidator })
     public async create(
       @Context() ctx: IContext,
@@ -221,8 +213,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.OK)
     @ExtendedSerializer(getSerializer)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:read@auth`)
+    @Auth(`${rolePrefix}:read@auth`)
     @ApiParam({
       name: 'id',
       example: '1def564a-42d9-4a94-9bf8-c9c6e4d796a6',
@@ -241,8 +232,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.CREATED)
     @ExtendedSerializer(updateSerializer)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:update@auth`)
+    @Auth(`${rolePrefix}:update@auth`)
     @ApiBody({ type: updateBodyValidator })
     @ApiParam({
       name: 'id',
@@ -266,8 +256,7 @@ export function ControllerFactory<
     })
     @HttpCode(HttpStatus.CREATED)
     @ExtendedSerializer(deleteSerializer)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:delete@auth`)
+    @Auth(`${rolePrefix}:delete@auth`)
     @ApiParam({
       name: 'id',
       example: '1def564a-42d9-4a94-9bf8-c9c6e4d796a6',
@@ -289,8 +278,7 @@ export function ControllerFactory<
         'Delete batch method, you can delete multiple items by multiple id',
     })
     @HttpCode(HttpStatus.CREATED)
-    @Authentication(true)
-    @Authorization(`${rolePrefix}:delete@auth`)
+    @Auth(`${rolePrefix}:delete@auth`)
     @ApiBody({ type: deleteBatchBodyValidator })
     public async deleteBatch(
       @Context() ctx: IContext,

@@ -1,12 +1,10 @@
+import { ESortMode } from '@/domain';
+import { IListPaginationRequest } from '@/domain';
+import { IListCursorRequest } from '@/domain';
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { RpcBadRequestException } from '../exceptions/common.rpc.exception';
-import {
-  ESortMode,
-  IListCursorRequest,
-  IListPaginationRequest,
-} from '@/domain';
+import { RpcBadRequestException } from '../exceptions';
 
 interface QueryFilters {
   pagination: IListCursorRequest | IListPaginationRequest;
@@ -15,6 +13,12 @@ interface QueryFilters {
     mode: ESortMode;
   };
   field?: Record<string, unknown>;
+}
+
+interface Query {
+  query: {
+    filters: QueryFilters;
+  };
 }
 
 interface ValidationError {
@@ -28,7 +32,7 @@ interface ClassConstructor<T = any> {
 }
 
 @Injectable()
-export class ListQueryRpcPipe<T extends { filters: QueryFilters }>
+export class RpcListQueryPipe<T extends { filters: QueryFilters }>
   implements PipeTransform
 {
   constructor(private readonly dto: ClassConstructor<T>) {
@@ -53,10 +57,8 @@ export class ListQueryRpcPipe<T extends { filters: QueryFilters }>
     }
 
     const validatedQuery = await this.validateQuery(value);
-    return {
-      ...value,
-      filters: validatedQuery.filters,
-    };
+    value.query = validatedQuery;
+    return value;
   }
 
   /**
@@ -64,8 +66,8 @@ export class ListQueryRpcPipe<T extends { filters: QueryFilters }>
    * @param query - The query to validate
    * @returns The validated query
    */
-  private async validateQuery(query: Record<string, unknown>): Promise<T> {
-    const convertQuery = plainToClass(this.dto, query);
+  private async validateQuery(val: Query): Promise<T> {
+    const convertQuery = plainToClass(this.dto, val.query);
     const errors = await validate(convertQuery);
 
     if (errors.length > 0) {
@@ -89,8 +91,8 @@ export class ListQueryRpcPipe<T extends { filters: QueryFilters }>
    * @param query - The query data
    * @returns Whether the query has valid filters
    */
-  private hasValidFilters(query: Record<string, unknown>): boolean {
-    const filters = query.filters as Record<string, unknown>;
+  private hasValidFilters(value: Query): boolean {
+    const filters = value.query.filters;
     return Boolean(
       filters?.pagination &&
         filters?.sort &&
@@ -104,7 +106,15 @@ export class ListQueryRpcPipe<T extends { filters: QueryFilters }>
    * @param metadata - Argument metadata
    * @returns Whether validation should be performed
    */
-  private shouldValidate(value: any, metadata: ArgumentMetadata): boolean {
-    return metadata.type === 'custom' && value && typeof value === 'object';
+  private shouldValidate(value: Query, metadata: ArgumentMetadata): boolean {
+    if (metadata.type !== 'body') {
+      return false;
+    }
+
+    if (value.query) {
+      return true;
+    }
+
+    return false;
   }
 }

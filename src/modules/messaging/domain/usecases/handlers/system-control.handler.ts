@@ -12,6 +12,11 @@ import { HandlerRegistryService } from '@/modules/messaging/domain/usecases/serv
 import { MessagingHandler } from './messaging.handler';
 import { SubjectFactory } from '../factories/subject.factory';
 import { SYSTEM_CONTROL_MESSAGE_TYPE } from './constant.handler';
+import {
+  GetConfigurationValidator,
+  GetConfigurationParameterValidator,
+  GetControlListValidator,
+} from '../entities/system-control.validator';
 
 @Injectable()
 export class SystemControlHandler extends MessagingHandler {
@@ -129,7 +134,7 @@ export class SystemControlHandler extends MessagingHandler {
     }
   }
 
-  public async getConfiguration(data: { name: string }) {
+  public async getConfiguration(data: GetConfigurationValidator) {
     try {
       log.info('Executing getConfiguration command', {
         name: data.name,
@@ -182,7 +187,7 @@ export class SystemControlHandler extends MessagingHandler {
     }
   }
 
-  public async getConfigurationNames(_data: any) {
+  public async getConfigurationNames() {
     try {
       log.info('Executing getConfigurationNames command');
 
@@ -206,7 +211,9 @@ export class SystemControlHandler extends MessagingHandler {
     }
   }
 
-  public async getConfigurationParameter(data: { paramName: string }) {
+  public async getConfigurationParameter(
+    data: GetConfigurationParameterValidator,
+  ) {
     try {
       log.info('Executing getConfigurationParameter command', {
         paramName: data.paramName,
@@ -247,7 +254,7 @@ export class SystemControlHandler extends MessagingHandler {
     }
   }
 
-  public async getControlList(data: any) {
+  public async getControlList(data: GetControlListValidator) {
     try {
       log.info('Executing getControlList command', {
         handlerType: data.handlerType,
@@ -289,7 +296,7 @@ export class SystemControlHandler extends MessagingHandler {
     }
   }
 
-  public async getManifestData(_data: any) {
+  public async getManifestData() {
     try {
       log.info('Executing getManifestData command');
 
@@ -319,7 +326,7 @@ export class SystemControlHandler extends MessagingHandler {
     }
   }
 
-  public async getMemoryInfo(_data: any) {
+  public async getMemoryInfo() {
     try {
       log.info('Executing getMemoryInfo command');
 

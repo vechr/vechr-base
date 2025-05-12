@@ -1,91 +1,107 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
+import { Body, Controller } from '@nestjs/common';
 import { SystemControlHandler } from '../domain/usecases/handlers/system-control.handler';
 import { SubjectFactory } from '../domain/usecases/factories/subject.factory';
 import { SYSTEM_CONTROL_MESSAGE_TYPE } from '../domain';
-
+import { LoggedMessagePattern, RpcAuth } from '@/frameworks';
+import {
+  GetConfigurationParameterValidator,
+  GetConfigurationValidator,
+  GetControlListValidator,
+} from '../domain/usecases/entities/system-control.validator';
 @Controller()
 export class SystemControlController {
   constructor(private readonly systemControlHandler: SystemControlHandler) {}
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'exit'),
   )
+  @RpcAuth(`system-control:write@auth`)
   async exit() {
     return this.systemControlHandler.exit();
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(
       SYSTEM_CONTROL_MESSAGE_TYPE,
       'getConfiguration',
     ),
   )
-  async getConfiguration(data: { name: string }) {
+  @RpcAuth(`system-control:read@auth`)
+  async getConfiguration(@Body() data: GetConfigurationValidator) {
     return this.systemControlHandler.getConfiguration(data);
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(
       SYSTEM_CONTROL_MESSAGE_TYPE,
       'getConfigurationNames',
     ),
   )
-  async getConfigurationNames(data: any) {
-    return this.systemControlHandler.getConfigurationNames(data);
+  @RpcAuth(`system-control:read@auth`)
+  async getConfigurationNames() {
+    return this.systemControlHandler.getConfigurationNames();
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(
       SYSTEM_CONTROL_MESSAGE_TYPE,
       'getConfigurationParameter',
     ),
   )
-  async getConfigurationParameter(data: { paramName: string }) {
+  @RpcAuth(`system-control:read@auth`)
+  async getConfigurationParameter(
+    @Body() data: GetConfigurationParameterValidator,
+  ) {
     return this.systemControlHandler.getConfigurationParameter(data);
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getControlList'),
   )
-  async getControlList(data: any) {
+  @RpcAuth(`system-control:read@auth`)
+  async getControlList(@Body() data: GetControlListValidator) {
     return this.systemControlHandler.getControlList(data);
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getManifestData'),
   )
-  async getManifestData(data: any) {
-    return this.systemControlHandler.getManifestData(data);
+  @RpcAuth(`system-control:read@auth`)
+  async getManifestData() {
+    return this.systemControlHandler.getManifestData();
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getMemoryInfo'),
   )
-  async getMemoryInfo(data: any) {
-    return this.systemControlHandler.getMemoryInfo(data);
+  @RpcAuth(`system-control:read@auth`)
+  async getMemoryInfo() {
+    return this.systemControlHandler.getMemoryInfo();
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getStatus'),
   )
+  @RpcAuth(`system-control:read@auth`)
   async getStatus() {
     return this.systemControlHandler.getStatus();
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(
       SYSTEM_CONTROL_MESSAGE_TYPE,
       'getSystemProperties',
     ),
   )
+  @RpcAuth(`system-control:read@auth`)
   async getSystemProperties() {
     return this.systemControlHandler.getSystemProperties();
   }
 
-  @MessagePattern(
+  @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'restart'),
   )
+  @RpcAuth(`system-control:write@auth`)
   async restart() {
     return this.systemControlHandler.restart();
   }

@@ -11,6 +11,7 @@ import { MESSAGING_ADAPTER } from './domain/entities/messaging-adapter.interface
 import { Transport } from '@nestjs/microservices';
 import { ClientsModule } from '@nestjs/microservices';
 import baseConfig from '@/config/base.config';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import baseConfig from '@/config/base.config';
     SystemControlHandler,
     SystemMonitorHandler,
     HandlerRegistryService,
+    JwtService,
     ConfigRegistryService,
     {
       provide: MESSAGING_ADAPTER,
