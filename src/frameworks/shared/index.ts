@@ -7,3 +7,4 @@ export * from './middlewares';
 export * from './pipes';
 export * from './responses';
 export * from './utils';
+export * from './controllers';
