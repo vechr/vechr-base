@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
 
 export class GetConfigurationValidator {
   @IsString()
@@ -8,6 +8,7 @@ export class GetConfigurationValidator {
 
 export class GetConfigurationParameterValidator {
   @IsString()
+  @IsNotEmpty()
   paramName: string;
 }
 

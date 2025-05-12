@@ -136,11 +136,9 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getConfiguration(data: GetConfigurationValidator) {
     try {
-      log.info('Executing getConfiguration command', {
-        name: data.name,
-      });
+      log.info('Executing getConfiguration command', data);
 
-      const configName = data.name || 'default';
+      const configName = data?.name || 'default';
       let config = {};
 
       if (configName === 'default' || configName === 'environment') {
@@ -215,9 +213,7 @@ export class SystemControlHandler extends MessagingHandler {
     data: GetConfigurationParameterValidator,
   ) {
     try {
-      log.info('Executing getConfigurationParameter command', {
-        paramName: data.paramName,
-      });
+      log.info('Executing getConfigurationParameter command', data);
 
       if (!data.paramName) {
         throw new Error('Parameter name is required');
@@ -256,16 +252,14 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getControlList(data: GetControlListValidator) {
     try {
-      log.info('Executing getControlList command', {
-        handlerType: data.handlerType,
-      });
+      log.info('Executing getControlList command', data);
 
       // Get controls from the global registry
       const allControls = this.handlerRegistry.getAllControls();
 
       // Handle filtering by handler type if requested
       let filteredControls = { ...allControls };
-      if (data.handlerType && typeof data.handlerType === 'string') {
+      if (data?.handlerType && typeof data?.handlerType === 'string') {
         const handlerType = data.handlerType;
         const handlerControls =
           this.handlerRegistry.getControlsForHandler(handlerType);
