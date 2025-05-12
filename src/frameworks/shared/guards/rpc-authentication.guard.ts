@@ -96,7 +96,7 @@ export class RpcAuthenticationGuard implements CanActivate {
       });
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof TokenExpiredError) {
         throw new RpcException({
           message: 'Token expired!',
