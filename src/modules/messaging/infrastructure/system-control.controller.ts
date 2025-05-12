@@ -2,12 +2,18 @@ import { Body, Controller } from '@nestjs/common';
 import { SystemControlHandler } from '../domain/usecases/handlers/system-control.handler';
 import { SubjectFactory } from '../domain/usecases/factories/subject.factory';
 import { SYSTEM_CONTROL_MESSAGE_TYPE } from '../domain';
-import { LoggedMessagePattern, RpcAuth } from '@/frameworks';
+import {
+  LoggedMessagePattern,
+  RpcAuth,
+  RpcExtendedController,
+} from '@/frameworks';
 import {
   GetConfigurationParameterValidator,
   GetConfigurationValidator,
   GetControlListValidator,
 } from '../domain/usecases/entities/system-control.validator';
+
+@RpcExtendedController()
 @Controller()
 export class SystemControlController {
   constructor(private readonly systemControlHandler: SystemControlHandler) {}
