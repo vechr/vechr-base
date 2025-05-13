@@ -14,16 +14,16 @@ export class RpcBodyValidationPipe implements PipeTransform<any> {
     const body = value.body;
 
     if (!body) {
-      return value;
+      return body;
     }
 
     // Check if the request is RPC
     if (type === 'custom') {
-      return value;
+      return body;
     }
 
     if (!metatype || !this.toValidate(metatype)) {
-      return value;
+      return body;
     }
 
     if (Object.keys(body).includes('id')) {
@@ -45,7 +45,7 @@ export class RpcBodyValidationPipe implements PipeTransform<any> {
         params: customErrors,
       });
     }
-    return value;
+    return body;
   }
 
   private toValidate(metatype: ClassConstructor): boolean {

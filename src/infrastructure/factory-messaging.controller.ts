@@ -9,7 +9,12 @@ import {
   FilterPaginationAuditQueryValidator,
   ListAuditSerializer,
 } from '../domain/entities/audit.entity';
-import { LoggedMessagePattern, RpcAuth, RpcUseList } from '@/frameworks';
+import {
+  LoggedMessagePattern,
+  RpcAuth,
+  RpcBodyValidationPipe,
+  RpcUseList,
+} from '@/frameworks';
 import { IDValidator } from '@/domain';
 import { OtelMethodCounter } from 'nestjs-otel';
 
@@ -53,7 +58,7 @@ export function MessagingControllerFactory<
     @ExtendedSerializer(getSerializer)
     @RpcAuth(`audit:read@auth`)
     @OtelMethodCounter()
-    async getAudit(@Body() data: IDValidator) {
+    async getAudit(@Body(new RpcBodyValidationPipe()) data: IDValidator) {
       const result = await this._usecase.getAudit(data.id);
 
       return new SuccessResponse(
@@ -114,7 +119,10 @@ export function MessagingControllerFactory<
     @ExtendedSerializer(upsertSerializer)
     @RpcAuth(`${rolePrefix}:create@auth`, `${rolePrefix}:update@auth`)
     @OtelMethodCounter()
-    async upsert(@Context() ctx: IContext, @Body() data: UpsertBody) {
+    async upsert(
+      @Context() ctx: IContext,
+      @Body(new RpcBodyValidationPipe()) data: UpsertBody,
+    ) {
       const result = await this._usecase.upsert(ctx, data);
 
       return new SuccessResponse(`${name} save successfully`, result);
@@ -124,7 +132,10 @@ export function MessagingControllerFactory<
     @ExtendedSerializer(createSerializer)
     @RpcAuth(`${rolePrefix}:create@auth`)
     @OtelMethodCounter()
-    async create(@Context() ctx: IContext, @Body() data: CreateBody) {
+    async create(
+      @Context() ctx: IContext,
+      @Body(new RpcBodyValidationPipe()) data: CreateBody,
+    ) {
       const result = await this._usecase.create(ctx, data);
 
       return new SuccessResponse(`${name} created successfully`, result);
@@ -134,7 +145,10 @@ export function MessagingControllerFactory<
     @ExtendedSerializer(getSerializer)
     @RpcAuth(`${rolePrefix}:read@auth`)
     @OtelMethodCounter()
-    async get(@Context() ctx: IContext, @Body() data: IDValidator) {
+    async get(
+      @Context() ctx: IContext,
+      @Body(new RpcBodyValidationPipe()) data: IDValidator,
+    ) {
       const result = await this._usecase.getById(ctx, data.id);
 
       return new SuccessResponse(`${name} fetched successfully`, result);
@@ -146,7 +160,7 @@ export function MessagingControllerFactory<
     @OtelMethodCounter()
     async update(
       @Context() ctx: IContext,
-      @Body() data: UpdateBody & IDValidator,
+      @Body(new RpcBodyValidationPipe()) data: UpdateBody & IDValidator,
     ) {
       const { id, ...body } = data;
       const result = await this._usecase.update(ctx, id, body);
@@ -158,7 +172,10 @@ export function MessagingControllerFactory<
     @ExtendedSerializer(deleteSerializer)
     @RpcAuth(`${rolePrefix}:delete@auth`)
     @OtelMethodCounter()
-    async delete(@Context() ctx: IContext, @Body() data: IDValidator) {
+    async delete(
+      @Context() ctx: IContext,
+      @Body(new RpcBodyValidationPipe()) data: IDValidator,
+    ) {
       const result = await this._usecase.delete(ctx, data.id);
 
       return new SuccessResponse(`${name} deleted successfully`, result);
@@ -170,7 +187,10 @@ export function MessagingControllerFactory<
     @ExtendedSerializer(deleteSerializer)
     @RpcAuth(`${rolePrefix}:delete@auth`)
     @OtelMethodCounter()
-    async deleteBatch(@Context() ctx: IContext, @Body() data: DeleteBatchBody) {
+    async deleteBatch(
+      @Context() ctx: IContext,
+      @Body(new RpcBodyValidationPipe()) data: DeleteBatchBody,
+    ) {
       const result = await this._usecase.deleteBatch(ctx, data);
 
       return new SuccessResponse(`${name} batch deleted successfully`, result);

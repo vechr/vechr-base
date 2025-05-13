@@ -5,6 +5,7 @@ import { SYSTEM_CONTROL_MESSAGE_TYPE } from '../domain';
 import {
   LoggedMessagePattern,
   RpcAuth,
+  RpcBodyValidationPipe,
   RpcExtendedController,
 } from '@/frameworks';
 import {
@@ -37,7 +38,9 @@ export class SystemControlController {
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
-  async getConfiguration(@Body() data: GetConfigurationValidator) {
+  async getConfiguration(
+    @Body(new RpcBodyValidationPipe()) data: GetConfigurationValidator,
+  ) {
     return this.systemControlHandler.getConfiguration(data);
   }
 
@@ -62,7 +65,7 @@ export class SystemControlController {
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
   async getConfigurationParameter(
-    @Body() data: GetConfigurationParameterValidator,
+    @Body(new RpcBodyValidationPipe()) data: GetConfigurationParameterValidator,
   ) {
     return this.systemControlHandler.getConfigurationParameter(data);
   }
@@ -72,7 +75,9 @@ export class SystemControlController {
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
-  async getControlList(@Body() data: GetControlListValidator) {
+  async getControlList(
+    @Body(new RpcBodyValidationPipe()) data: GetControlListValidator,
+  ) {
     return this.systemControlHandler.getControlList(data);
   }
 
