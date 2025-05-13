@@ -4,3 +4,4 @@ export * from './login.interceptor';
 export * from './logout.interceptor';
 export * from './serializer.interceptor';
 export * from './rpc-context.interceptor';
+export * from './rpc-logging.interceptor';
