@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 export * from './data';
 export * from './domain';
 export * from './config';

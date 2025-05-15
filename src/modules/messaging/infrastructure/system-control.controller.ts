@@ -14,12 +14,16 @@ import {
   GetControlListValidator,
 } from '../domain/usecases/entities/system-control.validator';
 import { OtelInstanceCounter, OtelMethodCounter } from 'nestjs-otel';
+import { HandlerRegistryService } from '../domain/usecases/services/handler-registry.service';
 
 @RpcExtendedController(SYSTEM_CONTROL_MESSAGE_TYPE)
 @OtelInstanceCounter()
 @Controller()
 export class SystemControlController {
-  constructor(private readonly systemControlHandler: SystemControlHandler) {}
+  constructor(
+    private readonly systemControlHandler: SystemControlHandler,
+    public readonly handlerRegistry: HandlerRegistryService,
+  ) {}
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'exit'),

@@ -1,6 +1,6 @@
 import { MessagePattern } from '@nestjs/microservices';
 import { log } from '../utils';
-import { Control } from './register-controls.decorator';
+import { Control, REGISTERED_CONTROLS } from './register-controls.decorator';
 
 /**
  * Decorator that combines MessagePattern with logging and Control registration.
@@ -24,7 +24,16 @@ export function LoggedMessagePattern(subject: string, description?: string) {
 
     // Apply the Control decorator if description is provided
     if (description) {
-      Control(description)(target, propertyKey, descriptor);
+      // Apply Control decorator directly
+      const controlDecorator = Control(description);
+      controlDecorator(target, propertyKey, descriptor);
+
+      // Ensure the metadata is also stored directly on the descriptor value
+      // This provides redundancy for metadata access
+      if (descriptor && descriptor.value) {
+        const metadata = { description };
+        Reflect.defineMetadata(REGISTERED_CONTROLS, metadata, descriptor.value);
+      }
     }
 
     // Apply the MessagePattern decorator

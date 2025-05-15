@@ -4,12 +4,16 @@ import { SubjectFactory } from '../domain/usecases/factories/subject.factory';
 import { SYSTEM_MONITOR_MESSAGE_TYPE } from '../domain/usecases/handlers/constant.handler';
 import { LoggedMessagePattern, RpcExtendedController } from '@/frameworks';
 import { OtelInstanceCounter, OtelMethodCounter } from 'nestjs-otel';
+import { HandlerRegistryService } from '../domain/usecases/services/handler-registry.service';
 
 @RpcExtendedController(SYSTEM_MONITOR_MESSAGE_TYPE)
 @OtelInstanceCounter()
 @Controller()
 export class SystemMonitorController {
-  constructor(private readonly systemMonitorHandler: SystemMonitorHandler) {}
+  constructor(
+    private readonly systemMonitorHandler: SystemMonitorHandler,
+    public readonly handlerRegistry: HandlerRegistryService,
+  ) {}
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_MONITOR_MESSAGE_TYPE, 'health'),

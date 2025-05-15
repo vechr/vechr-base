@@ -1,5 +1,5 @@
+import { log } from '@/frameworks';
 import { Injectable, Scope } from '@nestjs/common';
-import { log } from '@/frameworks/shared/utils';
 
 export interface ControlItem {
   name: string;
@@ -16,22 +16,12 @@ export interface ControlItem {
  */
 @Injectable({ scope: Scope.DEFAULT })
 export class HandlerRegistryService {
-  // Static instance to ensure we always use the same instance
-  private static instance: HandlerRegistryService;
-
   // Using a private property with a public getter ensures we can track
   // modifications to the controls map
   private _controls: Map<string, ControlItem[]> = new Map();
 
   constructor() {
-    // Ensure we only have one instance of the HandlerRegistryService
-    if (HandlerRegistryService.instance) {
-      log.debug('Returning existing HandlerRegistryService instance');
-      return HandlerRegistryService.instance;
-    }
-
-    log.debug('Creating new HandlerRegistryService instance');
-    HandlerRegistryService.instance = this;
+    log.debug('HandlerRegistryService created');
   }
 
   // Getter to allow debugging of the controls map
@@ -77,6 +67,11 @@ export class HandlerRegistryService {
       log.debug(
         `Verification: handler ${handlerType} now has ${verifyControls.length} controls`,
       );
+
+      // Log all controls for this handler type for debugging
+      verifyControls.forEach((control, index) => {
+        log.debug(`  ${index + 1}. ${control.name}: ${control.description}`);
+      });
     } else {
       log.debug(
         `Control ${name} already exists for handler ${handlerType} - skipping`,
