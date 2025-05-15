@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
+import { log } from '@/frameworks/shared/utils';
 
 export interface ControlItem {
   name: string;
@@ -13,9 +14,20 @@ export interface ControlItem {
  * Handlers can register their available methods, and the SystemControlHandler
  * can retrieve the complete list.
  */
-@Injectable()
+@Injectable({ scope: Scope.DEFAULT })
 export class HandlerRegistryService {
-  private controls: Map<string, ControlItem[]> = new Map();
+  // Using a private property with a public getter ensures we can track
+  // modifications to the controls map
+  private _controls: Map<string, ControlItem[]> = new Map();
+
+  constructor() {
+    log.debug('HandlerRegistryService created');
+  }
+
+  // Getter to allow debugging of the controls map
+  get controls(): Map<string, ControlItem[]> {
+    return this._controls;
+  }
 
   /**
    * Register a control method
@@ -29,22 +41,36 @@ export class HandlerRegistryService {
     name: string,
     description: string,
   ): void {
-    if (!this.controls.has(handlerType)) {
-      this.controls.set(handlerType, []);
+    log.debug(`Registering control: ${handlerType}.${name} - ${description}`);
+
+    if (!this._controls.has(handlerType)) {
+      this._controls.set(handlerType, []);
+      log.debug(`Created new control group for handler type: ${handlerType}`);
     }
 
     // Check if control already exists to avoid duplicates
-    const existingControls = this.controls.get(handlerType) || [];
+    const existingControls = this._controls.get(handlerType) || [];
     const exists = existingControls.some((control) => control.name === name);
 
     if (!exists) {
+      log.debug(`Adding control ${name} to handler ${handlerType}`);
       existingControls.push({
         name,
         description,
         handler: handlerType,
       });
 
-      this.controls.set(handlerType, existingControls);
+      this._controls.set(handlerType, existingControls);
+
+      // After setting, verify the control was actually added
+      const verifyControls = this._controls.get(handlerType) || [];
+      log.debug(
+        `Verification: handler ${handlerType} now has ${verifyControls.length} controls`,
+      );
+    } else {
+      log.debug(
+        `Control ${name} already exists for handler ${handlerType} - skipping`,
+      );
     }
   }
 
@@ -58,6 +84,9 @@ export class HandlerRegistryService {
     handlerType: string,
     controls: Array<{ name: string; description: string }>,
   ): void {
+    log.debug(
+      `Registering ${controls.length} controls for handler ${handlerType}`,
+    );
     controls.forEach((control) => {
       this.registerControl(handlerType, control.name, control.description);
     });
@@ -71,8 +100,15 @@ export class HandlerRegistryService {
   getAllControls(): Record<string, ControlItem[]> {
     const result: Record<string, ControlItem[]> = {};
 
-    this.controls.forEach((controls, handlerType) => {
+    this._controls.forEach((controls, handlerType) => {
       result[handlerType] = [...controls];
+    });
+
+    log.debug(
+      `getAllControls - found ${Object.keys(result).length} handler types with controls`,
+    );
+    Object.keys(result).forEach((handlerType) => {
+      log.debug(`  - ${handlerType}: ${result[handlerType].length} controls`);
     });
 
     return result;
@@ -85,7 +121,11 @@ export class HandlerRegistryService {
    * @returns Array of control items for the handler
    */
   getControlsForHandler(handlerType: string): ControlItem[] {
-    return this.controls.get(handlerType) || [];
+    const controls = this._controls.get(handlerType) || [];
+    log.debug(
+      `getControlsForHandler(${handlerType}) - found ${controls.length} controls`,
+    );
+    return controls;
   }
 
   /**
@@ -93,9 +133,10 @@ export class HandlerRegistryService {
    */
   getTotalControlCount(): number {
     let total = 0;
-    this.controls.forEach((controls) => {
+    this._controls.forEach((controls) => {
       total += controls.length;
     });
+    log.debug(`getTotalControlCount() - found ${total} total controls`);
     return total;
   }
 
@@ -103,7 +144,27 @@ export class HandlerRegistryService {
    * Get the list of all handler types that have registered controls
    */
   getHandlerTypes(): string[] {
-    return Array.from(this.controls.keys());
+    const types = Array.from(this._controls.keys());
+    log.debug(`getHandlerTypes() - found ${types.length} handler types`);
+    return types;
+  }
+
+  /**
+   * Debug method to dump the current state of controls to the log
+   */
+  dumpControls(): void {
+    log.info('=== CONTROL REGISTRY DUMP ===');
+    log.info(`Total handler types: ${this.getHandlerTypes().length}`);
+    log.info(`Total controls: ${this.getTotalControlCount()}`);
+
+    this._controls.forEach((controls, handlerType) => {
+      log.info(`Handler: ${handlerType} (${controls.length} controls)`);
+      controls.forEach((control) => {
+        log.info(`  - ${control.name}: ${control.description}`);
+      });
+    });
+
+    log.info('=== END CONTROL REGISTRY DUMP ===');
   }
 
   /**
@@ -111,6 +172,7 @@ export class HandlerRegistryService {
    * Mostly used for testing
    */
   clearAllControls(): void {
-    this.controls.clear();
+    log.debug('Clearing all controls from registry');
+    this._controls.clear();
   }
 }
