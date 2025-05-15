@@ -8,3 +8,4 @@ export * from './security.util';
 export * from './sleep.util';
 export * from './string.util';
 export * from './verify-controls.util';
+export * from './handler-registry-debug';

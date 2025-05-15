@@ -16,12 +16,22 @@ export interface ControlItem {
  */
 @Injectable({ scope: Scope.DEFAULT })
 export class HandlerRegistryService {
+  // Static instance to ensure we always use the same instance
+  private static instance: HandlerRegistryService;
+
   // Using a private property with a public getter ensures we can track
   // modifications to the controls map
   private _controls: Map<string, ControlItem[]> = new Map();
 
   constructor() {
-    log.debug('HandlerRegistryService created');
+    // Ensure we only have one instance of the HandlerRegistryService
+    if (HandlerRegistryService.instance) {
+      log.debug('Returning existing HandlerRegistryService instance');
+      return HandlerRegistryService.instance;
+    }
+
+    log.debug('Creating new HandlerRegistryService instance');
+    HandlerRegistryService.instance = this;
   }
 
   // Getter to allow debugging of the controls map
