@@ -1,4 +1,4 @@
-import { log } from '@/frameworks';
+import { ErrorResponse, log, SuccessResponse } from '@/frameworks';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -8,7 +8,6 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import * as os from 'os';
 import { ConfigRegistryService } from '@/modules/messaging/domain/usecases/services/config-registry.service';
-import { MessagingHandler } from './messaging.handler';
 import { SubjectFactory } from '../factories/subject.factory';
 import { SYSTEM_CONTROL_MESSAGE_TYPE } from './constant.handler';
 import {
@@ -19,15 +18,13 @@ import {
 import { MethodCollectorService } from '@/frameworks/data-services/method-collector/method-collector.service';
 
 @Injectable()
-export class SystemControlHandler extends MessagingHandler {
+export class SystemControlHandler {
   constructor(
     @Inject(MESSAGING_ADAPTER)
     private readonly messagingAdapter: IMessagingAdapter,
     private readonly configRegistry: ConfigRegistryService,
     private readonly methodCollectorService: MethodCollectorService,
-  ) {
-    super();
-  }
+  ) {}
 
   // Format bytes to human-readable format (KB, MB, GB)
   private formatBytes(bytes: number): string {
@@ -75,8 +72,6 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async exit() {
     try {
-      log.info('Executing exit command');
-
       // Publish an event before exiting
       await this.messagingAdapter.publish(
         SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'exiting'),
@@ -86,14 +81,9 @@ export class SystemControlHandler extends MessagingHandler {
         },
       );
 
-      const response = this.createSuccessResponse(
-        'Application is shutting down',
-        {
-          message: 'Application is shutting down',
-        },
-      );
-
-      log.info('Exit command response', { response });
+      const response = new SuccessResponse('Application is shutting down', {
+        message: 'Application is shutting down',
+      });
 
       // Schedule the exit after response is sent
       setTimeout(() => {
@@ -102,7 +92,7 @@ export class SystemControlHandler extends MessagingHandler {
 
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to execute exit command',
         err,
       );
@@ -113,8 +103,6 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getConfiguration(data: GetConfigurationValidator) {
     try {
-      log.info('Executing getConfiguration command', data);
-
       const configName = data?.name || 'default';
       let config = {};
 
@@ -142,18 +130,16 @@ export class SystemControlHandler extends MessagingHandler {
         };
       }
 
-      const response = this.createSuccessResponse(
+      const response = new SuccessResponse(
         'Configuration retrieved successfully',
         {
           configName,
           config,
         },
       );
-
-      log.info('GetConfiguration command response', { response });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to get configuration',
         err,
       );
@@ -164,20 +150,17 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getConfigurationNames() {
     try {
-      log.info('Executing getConfigurationNames command');
-
       const configNames = this.configRegistry.getAllConfigKeys();
-      const response = this.createSuccessResponse(
+      const response = new SuccessResponse(
         'Configuration names retrieved successfully',
         {
           configNames,
         },
       );
 
-      log.info('GetConfigurationNames command response', { response });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to get configuration names',
         err,
       );
@@ -190,8 +173,6 @@ export class SystemControlHandler extends MessagingHandler {
     data: GetConfigurationParameterValidator,
   ) {
     try {
-      log.info('Executing getConfigurationParameter command', data);
-
       if (!data.paramName) {
         throw new Error('Parameter name is required');
       }
@@ -207,18 +188,16 @@ export class SystemControlHandler extends MessagingHandler {
         }
       }
 
-      const response = this.createSuccessResponse(
+      const response = new SuccessResponse(
         'Configuration parameter retrieved successfully',
         {
           paramName,
           paramValue,
         },
       );
-
-      log.info('GetConfigurationParameter command response', { response });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to get configuration parameter',
         err,
       );
@@ -229,8 +208,6 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getControlList(data: GetControlListValidator) {
     try {
-      log.info('Executing getControlList command', data);
-
       // Get controls from the method collector service
       const allControlGroups = this.methodCollectorService.getControlGroups();
       const allControls = this.methodCollectorService.getAllControls();
@@ -262,12 +239,16 @@ export class SystemControlHandler extends MessagingHandler {
               name: control.name,
               description: control.description,
               handler: group.controlName,
+              subject: SubjectFactory.buildSubject(
+                group.controlName,
+                control.name,
+              ),
             }),
           );
         });
       }
 
-      const response = this.createSuccessResponse(
+      const response = new SuccessResponse(
         'Control list retrieved successfully',
         {
           controls: formattedControls,
@@ -275,11 +256,9 @@ export class SystemControlHandler extends MessagingHandler {
           handlerTypes: allControlGroups.map((group) => group.controlName),
         },
       );
-
-      log.info('GetControlList command response', { response });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to get control list',
         err,
       );
@@ -290,11 +269,9 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getManifestData() {
     try {
-      log.info('Executing getManifestData command');
-
       const packageInfo = await this.getPackageInfo();
 
-      const response = this.createSuccessResponse(
+      const response = new SuccessResponse(
         'Manifest data retrieved successfully',
         {
           application: {
@@ -305,11 +282,9 @@ export class SystemControlHandler extends MessagingHandler {
           },
         },
       );
-
-      log.info('GetManifestData command response', { response });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to get manifest data',
         err,
       );
@@ -320,11 +295,9 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getMemoryInfo() {
     try {
-      log.info('Executing getMemoryInfo command');
-
       const memoryUsage = process.memoryUsage();
 
-      const response = this.createSuccessResponse(
+      const response = new SuccessResponse(
         'Memory info retrieved successfully',
         {
           memory: {
@@ -357,14 +330,9 @@ export class SystemControlHandler extends MessagingHandler {
           },
         },
       );
-
-      log.info('GetMemoryInfo command response', { response });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
-        'Failed to get memory info',
-        err,
-      );
+      const errorResponse = new ErrorResponse('Failed to get memory info', err);
       log.error('GetMemoryInfo command error', { error: err });
       return errorResponse;
     }
@@ -372,36 +340,24 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getStatus() {
     try {
-      log.info('Executing getStatus command');
-
-      const response = this.createSuccessResponse(
-        'Status retrieved successfully',
-        {
-          status: 'running',
-          messaging: {
-            type: this.messagingAdapter.constructor.name,
-            status: 'connected',
-          },
-          uptime: this.formatUptime(process.uptime()),
-          uptimeRaw: process.uptime(),
-          startTime: new Date(
-            Date.now() - process.uptime() * 1000,
-          ).toISOString(),
-          heartbeat: {
-            active: true,
-            period: 5000,
-            periodFormatted: this.formatUptime(5),
-          },
+      const response = new SuccessResponse('Status retrieved successfully', {
+        status: 'running',
+        messaging: {
+          type: this.messagingAdapter.constructor.name,
+          status: 'connected',
         },
-      );
-
-      log.info('GetStatus command response', { response });
+        uptime: this.formatUptime(process.uptime()),
+        uptimeRaw: process.uptime(),
+        startTime: new Date(Date.now() - process.uptime() * 1000).toISOString(),
+        heartbeat: {
+          active: true,
+          period: 5000,
+          periodFormatted: this.formatUptime(5),
+        },
+      });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
-        'Failed to get status',
-        err,
-      );
+      const errorResponse = new ErrorResponse('Failed to get status', err);
       log.error('GetStatus command error', { error: err });
       return errorResponse;
     }
@@ -409,10 +365,8 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async getSystemProperties() {
     try {
-      log.info('Executing getSystemProperties command');
-
       const memoryUsage = process.memoryUsage();
-      const response = this.createSuccessResponse(
+      const response = new SuccessResponse(
         'System properties retrieved successfully',
         {
           process: {
@@ -448,11 +402,9 @@ export class SystemControlHandler extends MessagingHandler {
           },
         },
       );
-
-      log.info('GetSystemProperties command response', { response });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to get system properties',
         err,
       );
@@ -463,8 +415,6 @@ export class SystemControlHandler extends MessagingHandler {
 
   public async restart() {
     try {
-      log.info('Executing restart command');
-
       // Publish an event before restarting
       await this.messagingAdapter.publish(
         SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'restarting'),
@@ -474,12 +424,9 @@ export class SystemControlHandler extends MessagingHandler {
         },
       );
 
-      const response = this.createSuccessResponse('Application is restarting', {
+      const response = new SuccessResponse('Application is restarting', {
         message: 'Application is restarting',
       });
-
-      log.info('Restart command response', { response });
-
       // Schedule the restart after response is sent
       setTimeout(() => {
         process.exit(0);
@@ -487,7 +434,7 @@ export class SystemControlHandler extends MessagingHandler {
 
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to restart application',
         err,
       );

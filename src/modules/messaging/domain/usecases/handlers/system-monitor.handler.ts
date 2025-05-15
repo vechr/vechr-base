@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { MessagingHandler } from './messaging.handler';
 import { HealthService } from '@/frameworks/health/health.service';
-import { log } from '@/frameworks';
+import { ErrorResponse, log, SuccessResponse } from '@/frameworks';
 
 interface IHealthResponse {
   data: {
@@ -11,18 +10,14 @@ interface IHealthResponse {
 }
 
 @Injectable()
-export class SystemMonitorHandler extends MessagingHandler {
-  constructor(private readonly healthService: HealthService) {
-    super();
-  }
+export class SystemMonitorHandler {
+  constructor(private readonly healthService: HealthService) {}
 
   public async health() {
     try {
-      log.info('Executing health check command');
-
       const healthStatus = await this.healthService.healthCheck();
 
-      const response = this.createSuccessResponse<IHealthResponse['data']>(
+      const response = new SuccessResponse<IHealthResponse['data']>(
         'Health check completed successfully',
         {
           status: 'ok',
@@ -33,7 +28,7 @@ export class SystemMonitorHandler extends MessagingHandler {
       log.info('Health check command response', { response });
       return response;
     } catch (err: any) {
-      const errorResponse = this.createErrorResponse(
+      const errorResponse = new ErrorResponse(
         'Failed to perform health check',
         err,
       );
