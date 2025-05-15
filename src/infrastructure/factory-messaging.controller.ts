@@ -1,5 +1,4 @@
 import { Body, Type } from '@nestjs/common';
-import { SubjectFactory } from '../modules/messaging/domain/usecases/factories/subject.factory';
 import { BaseUseCase } from '../domain/usecase/base.usecase';
 import { SuccessResponse } from '../frameworks/shared/responses/success.response';
 import { IContext } from '../frameworks/shared/interceptors/context.interceptor';
@@ -54,7 +53,11 @@ export function MessagingControllerFactory<
   class BaseMessagingController {
     public _usecase: BaseUseCase;
 
-    @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'getAudit'))
+    @LoggedMessagePattern(
+      messageType,
+      'getAudit',
+      `Get audit of ${messageType} by id`,
+    )
     @ExtendedSerializer(getSerializer)
     @RpcAuth(`audit:read@auth`)
     @OtelMethodCounter()
@@ -67,7 +70,11 @@ export function MessagingControllerFactory<
       );
     }
 
-    @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'getAudits'))
+    @LoggedMessagePattern(
+      messageType,
+      'getAudits',
+      `Get audits of ${messageType} using pagination`,
+    )
     @RpcUseList(FilterPaginationAuditQueryValidator)
     @ExtendedSerializer(ListAuditSerializer)
     @RpcAuth(`audit:read@auth`)
@@ -79,7 +86,9 @@ export function MessagingControllerFactory<
     }
 
     @LoggedMessagePattern(
-      SubjectFactory.buildSubject(messageType, 'listDropdown'),
+      messageType,
+      'listDropdown',
+      `Get dropdown list of ${messageType}`,
     )
     @RpcAuth(`${rolePrefix}:read@auth`)
     @OtelMethodCounter()
@@ -90,7 +99,9 @@ export function MessagingControllerFactory<
     }
 
     @LoggedMessagePattern(
-      SubjectFactory.buildSubject(messageType, 'listPagination'),
+      messageType,
+      'listPagination',
+      `Get pagination list of ${messageType}`,
     )
     @RpcUseList(filterPagination)
     @ExtendedSerializer(listSerializer)
@@ -103,7 +114,9 @@ export function MessagingControllerFactory<
     }
 
     @LoggedMessagePattern(
-      SubjectFactory.buildSubject(messageType, 'listCursor'),
+      messageType,
+      'listCursor',
+      `Get cursor list of ${messageType}`,
     )
     @RpcUseList(filterCursor)
     @ExtendedSerializer(listSerializer)
@@ -115,7 +128,7 @@ export function MessagingControllerFactory<
       return new SuccessResponse(`${name} fetched successfully`, result, meta);
     }
 
-    @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'upsert'))
+    @LoggedMessagePattern(messageType, 'upsert', `Upsert ${messageType}`)
     @ExtendedSerializer(upsertSerializer)
     @RpcAuth(`${rolePrefix}:create@auth`, `${rolePrefix}:update@auth`)
     @OtelMethodCounter()
@@ -128,7 +141,7 @@ export function MessagingControllerFactory<
       return new SuccessResponse(`${name} save successfully`, result);
     }
 
-    @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'create'))
+    @LoggedMessagePattern(messageType, 'create', `Create ${messageType}`)
     @ExtendedSerializer(createSerializer)
     @RpcAuth(`${rolePrefix}:create@auth`)
     @OtelMethodCounter()
@@ -141,7 +154,7 @@ export function MessagingControllerFactory<
       return new SuccessResponse(`${name} created successfully`, result);
     }
 
-    @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'get'))
+    @LoggedMessagePattern(messageType, 'get', `Get ${messageType} by id`)
     @ExtendedSerializer(getSerializer)
     @RpcAuth(`${rolePrefix}:read@auth`)
     @OtelMethodCounter()
@@ -154,7 +167,7 @@ export function MessagingControllerFactory<
       return new SuccessResponse(`${name} fetched successfully`, result);
     }
 
-    @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'update'))
+    @LoggedMessagePattern(messageType, 'update', `Update ${messageType} by id`)
     @ExtendedSerializer(updateSerializer)
     @RpcAuth(`${rolePrefix}:update@auth`)
     @OtelMethodCounter()
@@ -168,7 +181,7 @@ export function MessagingControllerFactory<
       return new SuccessResponse(`${name} updated successfully`, result);
     }
 
-    @LoggedMessagePattern(SubjectFactory.buildSubject(messageType, 'delete'))
+    @LoggedMessagePattern(messageType, 'delete', `Delete ${messageType} by id`)
     @ExtendedSerializer(deleteSerializer)
     @RpcAuth(`${rolePrefix}:delete@auth`)
     @OtelMethodCounter()
@@ -182,7 +195,9 @@ export function MessagingControllerFactory<
     }
 
     @LoggedMessagePattern(
-      SubjectFactory.buildSubject(messageType, 'deleteBatch'),
+      messageType,
+      'deleteBatch',
+      `Delete ${messageType} batch`,
     )
     @ExtendedSerializer(deleteSerializer)
     @RpcAuth(`${rolePrefix}:delete@auth`)

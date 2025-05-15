@@ -1,6 +1,5 @@
 import { Body, Controller } from '@nestjs/common';
 import { SystemControlHandler } from '../domain/usecases/handlers/system-control.handler';
-import { SubjectFactory } from '../domain/usecases/factories/subject.factory';
 import { SYSTEM_CONTROL_MESSAGE_TYPE } from '../domain';
 import {
   LoggedMessagePattern,
@@ -22,7 +21,8 @@ export class SystemControlController {
   constructor(private readonly systemControlHandler: SystemControlHandler) {}
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'exit'),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'exit',
     'Shutdown the application',
   )
   @RpcAuth(`system-control:write@auth`)
@@ -32,10 +32,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(
-      SYSTEM_CONTROL_MESSAGE_TYPE,
-      'getConfiguration',
-    ),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'getConfiguration',
     'Get configuration',
   )
   @RpcAuth(`system-control:read@auth`)
@@ -47,10 +45,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(
-      SYSTEM_CONTROL_MESSAGE_TYPE,
-      'getConfigurationNames',
-    ),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'getConfigurationNames',
     'Get configuration names',
   )
   @RpcAuth(`system-control:read@auth`)
@@ -60,10 +56,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(
-      SYSTEM_CONTROL_MESSAGE_TYPE,
-      'getConfigurationParameter',
-    ),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'getConfigurationParameter',
     'Get configuration parameter',
   )
   @RpcAuth(`system-control:read@auth`)
@@ -75,7 +69,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getControlList'),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'getControlList',
     'Get control list',
   )
   @RpcAuth(`system-control:read@auth`)
@@ -87,7 +82,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getManifestData'),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'getManifestData',
     'Get manifest data',
   )
   @RpcAuth(`system-control:read@auth`)
@@ -97,7 +93,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getMemoryInfo'),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'getMemoryInfo',
     'Get memory info',
   )
   @RpcAuth(`system-control:read@auth`)
@@ -107,7 +104,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getStatus'),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'getStatus',
     'Get service status',
   )
   @RpcAuth(`system-control:read@auth`)
@@ -117,10 +115,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(
-      SYSTEM_CONTROL_MESSAGE_TYPE,
-      'getSystemProperties',
-    ),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'getSystemProperties',
     'Get detailed system info',
   )
   @RpcAuth(`system-control:read@auth`)
@@ -130,7 +126,8 @@ export class SystemControlController {
   }
 
   @LoggedMessagePattern(
-    SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'restart'),
+    SYSTEM_CONTROL_MESSAGE_TYPE,
+    'restart',
     'Restart the application',
   )
   @RpcAuth(`system-control:write@auth`)
