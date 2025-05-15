@@ -15,7 +15,7 @@ import {
 } from '../domain/usecases/entities/system-control.validator';
 import { OtelInstanceCounter, OtelMethodCounter } from 'nestjs-otel';
 
-@RpcExtendedController(SYSTEM_CONTROL_MESSAGE_TYPE)
+@RpcExtendedController()
 @OtelInstanceCounter()
 @Controller()
 export class SystemControlController {

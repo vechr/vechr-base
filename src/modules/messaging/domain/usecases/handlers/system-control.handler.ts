@@ -8,7 +8,6 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import * as os from 'os';
 import { ConfigRegistryService } from '@/modules/messaging/domain/usecases/services/config-registry.service';
-import { HandlerRegistryService } from '@/modules/messaging/domain/usecases/services/handler-registry.service';
 import { MessagingHandler } from './messaging.handler';
 import { SubjectFactory } from '../factories/subject.factory';
 import { SYSTEM_CONTROL_MESSAGE_TYPE } from './constant.handler';
@@ -17,6 +16,7 @@ import {
   GetConfigurationParameterValidator,
   GetControlListValidator,
 } from '../entities/system-control.validator';
+import { MethodCollectorService } from '@/frameworks/data-services/method-collector/method-collector.service';
 
 @Injectable()
 export class SystemControlHandler extends MessagingHandler {
@@ -24,7 +24,7 @@ export class SystemControlHandler extends MessagingHandler {
     @Inject(MESSAGING_ADAPTER)
     private readonly messagingAdapter: IMessagingAdapter,
     private readonly configRegistry: ConfigRegistryService,
-    private readonly handlerRegistry: HandlerRegistryService,
+    private readonly methodCollectorService: MethodCollectorService,
   ) {
     super();
   }
@@ -231,27 +231,47 @@ export class SystemControlHandler extends MessagingHandler {
     try {
       log.info('Executing getControlList command', data);
 
-      // Get controls from the global registry
-      const allControls = this.handlerRegistry.getAllControls();
+      // Get controls from the method collector service
+      const allControlGroups = this.methodCollectorService.getControlGroups();
+      const allControls = this.methodCollectorService.getAllControls();
+
+      // Format the response to maintain backward compatibility
+      const formattedControls: Record<string, any[]> = {};
 
       // Handle filtering by handler type if requested
-      let filteredControls = { ...allControls };
       if (data?.handlerType && typeof data?.handlerType === 'string') {
         const handlerType = data.handlerType;
-        const handlerControls =
-          this.handlerRegistry.getControlsForHandler(handlerType);
+        const controlGroup =
+          this.methodCollectorService.getControlGroup(handlerType);
 
-        if (handlerControls.length > 0) {
-          filteredControls = { [handlerType]: handlerControls };
+        if (controlGroup) {
+          formattedControls[handlerType] = controlGroup.controls.map(
+            (control) => ({
+              name: control.name,
+              description: control.description,
+              handler: handlerType,
+            }),
+          );
         }
+      } else {
+        // No filter, include all controls
+        allControlGroups.forEach((group) => {
+          formattedControls[group.controlName] = group.controls.map(
+            (control) => ({
+              name: control.name,
+              description: control.description,
+              handler: group.controlName,
+            }),
+          );
+        });
       }
 
       const response = this.createSuccessResponse(
         'Control list retrieved successfully',
         {
-          controls: filteredControls,
-          totalCommands: this.handlerRegistry.getTotalControlCount(),
-          handlerTypes: this.handlerRegistry.getHandlerTypes(),
+          controls: formattedControls,
+          totalCommands: allControls.length,
+          handlerTypes: allControlGroups.map((group) => group.controlName),
         },
       );
 

@@ -1,13 +1,13 @@
 import { MessagePattern } from '@nestjs/microservices';
 import { log } from '../utils';
-import { Control } from './register-controls.decorator';
+import { CollectMethod } from './method-collector.decorator';
 
 /**
- * Decorator that combines MessagePattern with logging and Control registration.
- * This allows a method to be both a message handler and a registered control.
+ * Decorator that combines MessagePattern with logging and method collection.
+ * This allows a method to be both a message handler and a collected control.
  *
  * @param subject The message subject pattern
- * @param description Optional description for the Control registration
+ * @param description Optional description for the control registration
  */
 export function LoggedMessagePattern(subject: string, description?: string) {
   return function (
@@ -22,9 +22,17 @@ export function LoggedMessagePattern(subject: string, description?: string) {
       `Registering message pattern for subject: ${subject} in class: ${className}`,
     );
 
-    // Apply the Control decorator if description is provided
+    // Apply the CollectMethod decorator if description is provided
     if (description) {
-      Control(description)(target, propertyKey, descriptor);
+      CollectMethod(subject, description)(target, propertyKey, descriptor);
+    } else {
+      // Use a default description if none provided
+      const defaultDescription = `Handles ${subject} messages`;
+      CollectMethod(subject, defaultDescription)(
+        target,
+        propertyKey,
+        descriptor,
+      );
     }
 
     // Apply the MessagePattern decorator

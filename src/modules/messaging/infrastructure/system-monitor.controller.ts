@@ -5,7 +5,7 @@ import { SYSTEM_MONITOR_MESSAGE_TYPE } from '../domain/usecases/handlers/constan
 import { LoggedMessagePattern, RpcExtendedController } from '@/frameworks';
 import { OtelInstanceCounter, OtelMethodCounter } from 'nestjs-otel';
 
-@RpcExtendedController(SYSTEM_MONITOR_MESSAGE_TYPE)
+@RpcExtendedController()
 @OtelInstanceCounter()
 @Controller()
 export class SystemMonitorController {

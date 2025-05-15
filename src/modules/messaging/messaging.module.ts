@@ -3,7 +3,6 @@ import { SystemControlController } from './infrastructure/system-control.control
 import { SystemMonitorController } from './infrastructure/system-monitor.controller';
 import { SystemControlHandler } from './domain/usecases/handlers/system-control.handler';
 import { SystemMonitorHandler } from './domain/usecases/handlers/system-monitor.handler';
-import { HandlerRegistryService } from './domain/usecases/services/handler-registry.service';
 import { HealthModule } from '@/frameworks/health/health.module';
 import { ConfigRegistryService } from './domain/usecases/services/config-registry.service';
 import { NatsMessagingAdapter } from './domain/usecases/adapter/nats-messaging.adapter';
@@ -12,6 +11,8 @@ import { Transport } from '@nestjs/microservices';
 import { ClientsModule } from '@nestjs/microservices';
 import baseConfig from '@/config/base.config';
 import { JwtService } from '@nestjs/jwt';
+import { MethodCollectorService } from '@/frameworks/data-services/method-collector/method-collector.service';
+import { DiscoveryModule, MetadataScanner } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -31,14 +32,16 @@ import { JwtService } from '@nestjs/jwt';
       },
     ]),
     HealthModule,
+    DiscoveryModule,
   ],
   controllers: [SystemControlController, SystemMonitorController],
   providers: [
     SystemControlHandler,
     SystemMonitorHandler,
-    HandlerRegistryService,
     JwtService,
     ConfigRegistryService,
+    MethodCollectorService,
+    MetadataScanner,
     {
       provide: MESSAGING_ADAPTER,
       useClass: NatsMessagingAdapter,
@@ -47,9 +50,9 @@ import { JwtService } from '@nestjs/jwt';
   exports: [
     SystemControlHandler,
     SystemMonitorHandler,
-    HandlerRegistryService,
     ConfigRegistryService,
     MESSAGING_ADAPTER,
+    MethodCollectorService,
   ],
 })
 export class MessagingModule {}
