@@ -250,6 +250,7 @@ export class SystemControlHandler extends MessagingHandler {
               name: control.name,
               description: control.description,
               handler: handlerType,
+              subject: SubjectFactory.buildSubject(handlerType, control.name),
             }),
           );
         }

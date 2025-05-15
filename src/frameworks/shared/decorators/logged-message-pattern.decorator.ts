@@ -27,7 +27,7 @@ export function LoggedMessagePattern(
 
     // Log registration
     log.info(
-      `Registering message pattern for messageType: ${messageType} in class: ${className}`,
+      `Registering message pattern for subject: ${subject} in class: ${className}`,
     );
 
     // Apply the CollectMethod decorator if description is provided
