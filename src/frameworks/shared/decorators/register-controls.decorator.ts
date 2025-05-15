@@ -20,19 +20,17 @@ export const Control = (description: string) =>
 /**
  * Decorator for registering a handler class with all its control methods.
  *
- * This decorator automatically detects the HandlerRegistryService from the
- * dependency injection container, so you don't need to manually inject it
- * in your handler constructor.
+ * This decorator will store metadata about the handler type on the class itself,
+ * and will scan for methods that have the @Control decorator.
+ *
+ * This version works directly with method decorators to automatically register
+ * control methods.
  *
  * Usage:
  * ```typescript
  * @Injectable()
  * @RegisterControls('MyHandlerType')
  * export class MyHandler {
- *   constructor() {
- *     // No need to inject HandlerRegistryService
- *   }
- *
  *   @Control('Does something useful')
  *   async myMethod() {
  *     // Implementation
@@ -59,72 +57,95 @@ export function RegisterControls(handlerType: string) {
       );
     });
 
-    log.debug(`Found ${methodNames.length} methods in class ${target.name}`);
+    log.debug(
+      `Found ${methodNames.length} methods in class ${target.name}: ${methodNames.join(', ')}`,
+    );
 
-    // Original constructor
-    const originalInit = target.prototype.onModuleInit;
+    // Store info about which methods have the Control decorator
+    const controlMethods: { name: string; description: string }[] = [];
 
-    // Add onModuleInit lifecycle hook to register controls when module initializes
-    target.prototype.onModuleInit = async function () {
-      // Call original onModuleInit if it exists
-      if (originalInit) {
-        await originalInit.call(this);
+    // Check each method for the Control decorator
+    methodNames.forEach((methodName) => {
+      const method = prototype[methodName];
+      const metadata = Reflect.getMetadata(REGISTERED_CONTROLS, method);
+
+      if (metadata) {
+        log.debug(
+          `Found Control decorator on ${target.name}.${methodName}: ${metadata.description}`,
+        );
+        controlMethods.push({
+          name: methodName,
+          description: metadata.description,
+        });
       }
+    });
 
-      try {
-        // Find the HandlerRegistryService
-        const handlerRegistryService = this.handlerRegistry;
+    // Store the control methods on the class
+    if (controlMethods.length > 0) {
+      log.debug(
+        `Saving ${controlMethods.length} control methods on ${target.name}`,
+      );
+      Reflect.defineMetadata('control_methods', controlMethods, target);
 
-        if (!handlerRegistryService) {
-          log.warn(
-            `HandlerRegistryService not injected in ${target.name} (property 'handlerRegistry' not found).`,
-          );
-          return;
-        }
+      // When an instance is created, we attempt to register the controls
+      const originalConstructor = target;
 
-        if (!(handlerRegistryService instanceof HandlerRegistryService)) {
-          log.warn(
-            `Property 'handlerRegistry' in ${target.name} is not an instance of HandlerRegistryService.`,
-          );
-          return;
-        }
+      function newConstructor(...args: any[]) {
+        const instance = new originalConstructor(...args);
 
-        log.debug(`Found HandlerRegistryService in ${target.name}`);
-
-        // Register each method that has the @Control decorator
-        for (const methodName of methodNames) {
+        // Use setTimeout to ensure this runs after construction
+        // This gives the DI container time to set up properties
+        setTimeout(() => {
           try {
-            const method = prototype[methodName];
-            const metadata = Reflect.getMetadata(REGISTERED_CONTROLS, method);
+            // Try to find HandlerRegistryService
+            const handlerRegistry =
+              (global as any).handlerRegistryService ||
+              instance.handlerRegistry;
 
-            if (metadata) {
+            if (handlerRegistry instanceof HandlerRegistryService) {
               log.debug(
-                `Registering control: ${handlerType}.${methodName} - ${metadata.description}`,
+                `Registering ${controlMethods.length} controls for handler ${handlerType}`,
               );
 
-              handlerRegistryService.registerControl(
-                handlerType,
-                methodName,
-                metadata.description,
+              // Register each control method
+              controlMethods.forEach((control) => {
+                handlerRegistry.registerControl(
+                  handlerType,
+                  control.name,
+                  control.description,
+                );
+              });
+            } else {
+              log.debug(
+                `HandlerRegistryService not found when creating ${target.name}`,
               );
             }
           } catch (err: any) {
             log.error(
-              `Error registering control ${methodName}: ${err.message}`,
+              `Error registering controls for ${target.name}: ${err.message}`,
             );
           }
-        }
+        }, 100);
 
-        const registeredControls =
-          handlerRegistryService.getControlsForHandler(handlerType);
-        log.info(
-          `Registered ${registeredControls.length} controls for handler ${handlerType}`,
-        );
-      } catch (err: any) {
-        log.error(`Error in onModuleInit for ${target.name}: ${err.message}`);
+        return instance;
       }
-    };
 
+      // Copy prototype and metadata so the new constructor works like the original
+      newConstructor.prototype = originalConstructor.prototype;
+      Object.getOwnPropertyNames(target).forEach((key) => {
+        if (key !== 'prototype') {
+          Object.defineProperty(
+            newConstructor,
+            key,
+            Object.getOwnPropertyDescriptor(target, key) as PropertyDescriptor,
+          );
+        }
+      });
+
+      return newConstructor;
+    }
+
+    // If no control methods found, just return the original class
     return target;
   };
 }

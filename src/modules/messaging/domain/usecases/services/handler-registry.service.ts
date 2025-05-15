@@ -22,6 +22,10 @@ export class HandlerRegistryService {
 
   constructor() {
     log.debug('HandlerRegistryService created');
+
+    // Store a reference to this instance globally for fallback mechanism
+    // This helps with decorators that may not have access to the DI container
+    (global as any).handlerRegistryService = this;
   }
 
   // Getter to allow debugging of the controls map

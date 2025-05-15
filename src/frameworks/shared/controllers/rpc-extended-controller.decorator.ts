@@ -1,7 +1,13 @@
-import { UseFilters, UseInterceptors, applyDecorators } from '@nestjs/common';
+import {
+  Controller,
+  UseFilters,
+  UseInterceptors,
+  applyDecorators,
+} from '@nestjs/common';
 import { RpcExtendedExceptionFilter } from '../filters';
 import { RpcContextInterceptor, RpcLoggingInterceptor } from '../interceptors';
 import { RegisterControls } from '../decorators/register-controls.decorator';
+import { log } from '../utils';
 
 /**
  * Extended RPC controller decorator that applies:
@@ -11,8 +17,11 @@ import { RegisterControls } from '../decorators/register-controls.decorator';
  * @param prefix Controller prefix (optional)
  */
 export function RpcExtendedController(handlerType?: string) {
+  log.debug(`Creating RpcExtendedController with handler type: ${handlerType}`);
+
   const decorators = [
-    // Only add Controller with prefix if prefix is provided
+    // Add standard Controller decorator
+    Controller(),
     UseFilters(RpcExtendedExceptionFilter),
     UseInterceptors(RpcLoggingInterceptor),
     UseInterceptors(RpcContextInterceptor),
@@ -20,6 +29,9 @@ export function RpcExtendedController(handlerType?: string) {
 
   // Add RegisterControls decorator if handlerType is provided
   if (handlerType) {
+    log.debug(
+      `Adding RegisterControls decorator with handler type: ${handlerType}`,
+    );
     decorators.push(RegisterControls(handlerType));
   }
 
