@@ -11,12 +11,12 @@ import { ConfigRegistryService } from '@/modules/messaging/domain/usecases/servi
 import { HandlerRegistryService } from '@/modules/messaging/domain/usecases/services/handler-registry.service';
 import { MessagingHandler } from './messaging.handler';
 import { SubjectFactory } from '../factories/subject.factory';
-import { SYSTEM_CONTROL_MESSAGE_TYPE } from './constant.handler';
 import {
   GetConfigurationValidator,
   GetConfigurationParameterValidator,
   GetControlListValidator,
 } from '../entities/system-control.validator';
+import { SYSTEM_CONTROL_MESSAGE_TYPE } from './constant.handler';
 
 @Injectable()
 export class SystemControlHandler extends MessagingHandler {
@@ -24,7 +24,7 @@ export class SystemControlHandler extends MessagingHandler {
     @Inject(MESSAGING_ADAPTER)
     private readonly messagingAdapter: IMessagingAdapter,
     private readonly configRegistry: ConfigRegistryService,
-    private readonly handlerRegistry: HandlerRegistryService,
+    public readonly handlerRegistry: HandlerRegistryService,
   ) {
     super();
   }

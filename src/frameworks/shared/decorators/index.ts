@@ -8,4 +8,3 @@ export * from './user.decorator';
 export * from './rpc-auth.decorator';
 export * from './rpc-use-list.decorator';
 export * from './logged-message-pattern.decorator';
-export * from './register-controls.decorator';
