@@ -1,4 +1,3 @@
-import { log } from '@/frameworks';
 import { Injectable } from '@nestjs/common';
 
 export interface ControlItem {
@@ -113,29 +112,5 @@ export class HandlerRegistryService {
    */
   clearAllControls(): void {
     this.controls.clear();
-  }
-
-  /**
-   * Dump all registered controls to the logs
-   * Useful for debugging
-   */
-  dumpControls(): void {
-    const handlerTypes = this.getHandlerTypes();
-    const totalCount = this.getTotalControlCount();
-
-    log.debug('=== REGISTERED CONTROLS ===');
-    log.debug(`Total handler types: ${handlerTypes.length}`);
-    log.debug(`Total controls: ${totalCount}`);
-
-    handlerTypes.forEach((handlerType) => {
-      log.info(
-        `Handler: ${handlerType} (${this.getControlsForHandler(handlerType).length} controls)`,
-      );
-      this.getControlsForHandler(handlerType).forEach((control) => {
-        log.info(`  - ${control.name}: ${control.description}`);
-      });
-    });
-
-    log.info('=== END REGISTERED CONTROLS ===');
   }
 }

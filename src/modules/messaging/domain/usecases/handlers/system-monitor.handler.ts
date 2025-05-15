@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { MessagingHandler } from './messaging.handler';
 import { HealthService } from '@/frameworks/health/health.service';
 import { log } from '@/frameworks';
-import { SYSTEM_MONITOR_MESSAGE_TYPE } from './constant.handler';
-import { RegisterControl } from '../../../../../frameworks/shared/decorators/register-control.decorator';
 
 interface IHealthResponse {
   data: {
@@ -18,11 +16,6 @@ export class SystemMonitorHandler extends MessagingHandler {
     super();
   }
 
-  @RegisterControl(
-    SYSTEM_MONITOR_MESSAGE_TYPE,
-    'health',
-    'Performs a health check on the system and returns the status',
-  )
   public async health() {
     try {
       log.info('Executing health check command');

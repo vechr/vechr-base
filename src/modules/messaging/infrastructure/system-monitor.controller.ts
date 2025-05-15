@@ -4,9 +4,8 @@ import { SubjectFactory } from '../domain/usecases/factories/subject.factory';
 import { SYSTEM_MONITOR_MESSAGE_TYPE } from '../domain/usecases/handlers/constant.handler';
 import { LoggedMessagePattern, RpcExtendedController } from '@/frameworks';
 import { OtelInstanceCounter, OtelMethodCounter } from 'nestjs-otel';
-import { RegisterControl } from '../../../frameworks/shared/decorators/register-control.decorator';
 
-@RpcExtendedController()
+@RpcExtendedController(SYSTEM_MONITOR_MESSAGE_TYPE)
 @OtelInstanceCounter()
 @Controller()
 export class SystemMonitorController {
@@ -14,13 +13,9 @@ export class SystemMonitorController {
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_MONITOR_MESSAGE_TYPE, 'health'),
+    'Check the health status of the service',
   )
   @OtelMethodCounter()
-  @RegisterControl(
-    SYSTEM_MONITOR_MESSAGE_TYPE,
-    'health',
-    'Performs a health check on the system and returns the status',
-  )
   async health() {
     return this.systemMonitorHandler.health();
   }
