@@ -1,9 +1,7 @@
-import { HandlerRegistryService } from '@/modules/messaging/domain/usecases/services/handler-registry.service';
 import { Injectable } from '@nestjs/common';
 import { MessagingHandler } from './messaging.handler';
 import { HealthService } from '@/frameworks/health/health.service';
 import { log } from '@/frameworks';
-import { SYSTEM_MONITOR_MESSAGE_TYPE } from './constant.handler';
 
 interface IHealthResponse {
   data: {
@@ -14,17 +12,9 @@ interface IHealthResponse {
 
 @Injectable()
 export class SystemMonitorHandler extends MessagingHandler {
-  constructor(
-    private readonly healthService: HealthService,
-    handlerRegistry: HandlerRegistryService,
-  ) {
-    super(handlerRegistry);
-    this.registrationControls(SYSTEM_MONITOR_MESSAGE_TYPE);
+  constructor(private readonly healthService: HealthService) {
+    super();
   }
-
-  protected override methods: { name: string; description: string }[] = [
-    { name: 'health', description: 'Check the health status of the gateway' },
-  ];
 
   public async health() {
     try {

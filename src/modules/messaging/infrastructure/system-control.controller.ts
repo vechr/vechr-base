@@ -15,7 +15,7 @@ import {
 } from '../domain/usecases/entities/system-control.validator';
 import { OtelInstanceCounter, OtelMethodCounter } from 'nestjs-otel';
 
-@RpcExtendedController()
+@RpcExtendedController(SYSTEM_CONTROL_MESSAGE_TYPE)
 @OtelInstanceCounter()
 @Controller()
 export class SystemControlController {
@@ -23,6 +23,7 @@ export class SystemControlController {
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'exit'),
+    'Shutdown the application',
   )
   @RpcAuth(`system-control:write@auth`)
   @OtelMethodCounter()
@@ -35,6 +36,7 @@ export class SystemControlController {
       SYSTEM_CONTROL_MESSAGE_TYPE,
       'getConfiguration',
     ),
+    'Get configuration',
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
@@ -49,6 +51,7 @@ export class SystemControlController {
       SYSTEM_CONTROL_MESSAGE_TYPE,
       'getConfigurationNames',
     ),
+    'Get configuration names',
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
@@ -61,6 +64,7 @@ export class SystemControlController {
       SYSTEM_CONTROL_MESSAGE_TYPE,
       'getConfigurationParameter',
     ),
+    'Get configuration parameter',
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
@@ -72,6 +76,7 @@ export class SystemControlController {
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getControlList'),
+    'Get control list',
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
@@ -83,6 +88,7 @@ export class SystemControlController {
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getManifestData'),
+    'Get manifest data',
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
@@ -92,6 +98,7 @@ export class SystemControlController {
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getMemoryInfo'),
+    'Get memory info',
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
@@ -101,6 +108,7 @@ export class SystemControlController {
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'getStatus'),
+    'Get service status',
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
@@ -113,6 +121,7 @@ export class SystemControlController {
       SYSTEM_CONTROL_MESSAGE_TYPE,
       'getSystemProperties',
     ),
+    'Get detailed system info',
   )
   @RpcAuth(`system-control:read@auth`)
   @OtelMethodCounter()
@@ -122,6 +131,7 @@ export class SystemControlController {
 
   @LoggedMessagePattern(
     SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'restart'),
+    'Restart the application',
   )
   @RpcAuth(`system-control:write@auth`)
   @OtelMethodCounter()

@@ -24,33 +24,10 @@ export class SystemControlHandler extends MessagingHandler {
     @Inject(MESSAGING_ADAPTER)
     private readonly messagingAdapter: IMessagingAdapter,
     private readonly configRegistry: ConfigRegistryService,
-    handlerRegistry: HandlerRegistryService,
+    private readonly handlerRegistry: HandlerRegistryService,
   ) {
-    super(handlerRegistry);
-
-    this.registrationControls(SYSTEM_CONTROL_MESSAGE_TYPE);
+    super();
   }
-
-  /**
-   * Register all system control methods with the global registry
-   */
-  protected override methods: { name: string; description: string }[] = [
-    { name: 'exit', description: 'Shutdown the application' },
-    { name: 'getActivity', description: 'Configure heartbeat' },
-    { name: 'getConfiguration', description: 'Get configuration text' },
-    { name: 'getConfigurationNames', description: 'Get configuration names' },
-    {
-      name: 'getConfigurationParameter',
-      description: 'Get configuration parameter',
-    },
-    { name: 'getControlList', description: 'Get system control info' },
-    { name: 'getLogInfo', description: 'Get recent log entries' },
-    { name: 'getManifestData', description: 'Get manifest information' },
-    { name: 'getMemoryInfo', description: 'Get memory usage' },
-    { name: 'getStatus', description: 'Get service status' },
-    { name: 'getSystemProperties', description: 'Get detailed system info' },
-    { name: 'restart', description: 'Restart the application' },
-  ];
 
   // Format bytes to human-readable format (KB, MB, GB)
   private formatBytes(bytes: number): string {
@@ -102,7 +79,7 @@ export class SystemControlHandler extends MessagingHandler {
 
       // Publish an event before exiting
       await this.messagingAdapter.publish(
-        SubjectFactory.buildSubject(this.messageType, 'exiting'),
+        SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'exiting'),
         {
           timestamp: new Date().toISOString(),
           message: 'Application is shutting down',
@@ -469,7 +446,7 @@ export class SystemControlHandler extends MessagingHandler {
 
       // Publish an event before restarting
       await this.messagingAdapter.publish(
-        SubjectFactory.buildSubject(this.messageType, 'restarting'),
+        SubjectFactory.buildSubject(SYSTEM_CONTROL_MESSAGE_TYPE, 'restarting'),
         {
           timestamp: new Date().toISOString(),
           message: 'Application is restarting',
