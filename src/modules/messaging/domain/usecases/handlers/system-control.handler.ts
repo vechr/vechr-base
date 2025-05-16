@@ -1,4 +1,9 @@
-import { ErrorResponse, log, SuccessResponse } from '@/frameworks';
+import {
+  ConfigCollectorService,
+  ErrorResponse,
+  log,
+  SuccessResponse,
+} from '@/frameworks';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -7,7 +12,6 @@ import {
 } from '@/modules/messaging/domain/entities/messaging-adapter.interface';
 import { Inject, Injectable } from '@nestjs/common';
 import * as os from 'os';
-import { ConfigRegistryService } from '@/modules/messaging/domain/usecases/services/config-registry.service';
 import { SubjectFactory } from '../factories/subject.factory';
 import { SYSTEM_CONTROL_MESSAGE_TYPE } from './constant.handler';
 import {
@@ -22,7 +26,7 @@ export class SystemControlHandler {
   constructor(
     @Inject(MESSAGING_ADAPTER)
     private readonly messagingAdapter: IMessagingAdapter,
-    private readonly configRegistry: ConfigRegistryService,
+    private readonly configCollector: ConfigCollectorService,
     private readonly methodCollectorService: MethodCollectorService,
   ) {}
 
@@ -150,7 +154,7 @@ export class SystemControlHandler {
 
   public async getConfigurationNames() {
     try {
-      const configNames = this.configRegistry.getAllConfigKeys();
+      const configNames = this.configCollector.getAllConfigKeys();
       const response = new SuccessResponse(
         'Configuration names retrieved successfully',
         {

@@ -4,7 +4,6 @@ import { SystemMonitorController } from './infrastructure/system-monitor.control
 import { SystemControlHandler } from './domain/usecases/handlers/system-control.handler';
 import { SystemMonitorHandler } from './domain/usecases/handlers/system-monitor.handler';
 import { HealthModule } from '@/frameworks/health/health.module';
-import { ConfigRegistryService } from './domain/usecases/services/config-registry.service';
 import { NatsMessagingAdapter } from './domain/usecases/adapter/nats-messaging.adapter';
 import { MESSAGING_ADAPTER } from './domain/entities/messaging-adapter.interface';
 import { Transport } from '@nestjs/microservices';
@@ -13,6 +12,7 @@ import baseConfig from '@/config/base.config';
 import { JwtService } from '@nestjs/jwt';
 import { MethodCollectorService } from '@/frameworks/data-services/method-collector/method-collector.service';
 import { DiscoveryModule, MetadataScanner } from '@nestjs/core';
+import { ConfigCollectorService } from '@/frameworks/data-services/config/config-collector.service';
 
 @Module({
   imports: [
@@ -39,8 +39,8 @@ import { DiscoveryModule, MetadataScanner } from '@nestjs/core';
     SystemControlHandler,
     SystemMonitorHandler,
     JwtService,
-    ConfigRegistryService,
     MethodCollectorService,
+    ConfigCollectorService,
     MetadataScanner,
     {
       provide: MESSAGING_ADAPTER,
@@ -50,9 +50,9 @@ import { DiscoveryModule, MetadataScanner } from '@nestjs/core';
   exports: [
     SystemControlHandler,
     SystemMonitorHandler,
-    ConfigRegistryService,
     MESSAGING_ADAPTER,
     MethodCollectorService,
+    ConfigCollectorService,
   ],
 })
 export class MessagingModule {}
