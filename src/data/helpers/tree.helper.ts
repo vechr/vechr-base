@@ -4,6 +4,66 @@ import { NodeTree, TEntityTree, Tree } from '../../domain/entities/tree.entity';
 /* The TreeHelper class in TypeScript provides methods for querying tree models from a database using
 recursive queries. */
 export class TreeHelper {
+  private static async getDatabaseType(
+    tx: TPrismaTx,
+  ): Promise<'postgresql' | 'mssql'> {
+    // @ts-ignore - Prisma doesn't expose this type directly
+    return tx.$queryRaw`SELECT current_setting('server_version_num')`
+      .then(() => 'postgresql')
+      .catch(() => 'mssql');
+  }
+
+  private static async getRecursiveQuery(
+    tx: TPrismaTx,
+    tableName: string,
+    id?: string,
+  ): Promise<string> {
+    const dbType = await this.getDatabaseType(tx);
+
+    if (dbType === 'postgresql') {
+      return `
+        WITH RECURSIVE group_groups AS (
+          SELECT 
+            id, 
+            "parentId", 
+            name 
+          FROM 
+            "${tableName}"
+          ${id ? `WHERE id = '${id}'` : ''}
+          UNION 
+          SELECT 
+            r.id, 
+            r."parentId", 
+            r.name 
+          FROM 
+            "${tableName}" r 
+            INNER JOIN group_groups g ON g.id = r."parentId"
+        ) 
+        SELECT * FROM group_groups;`;
+    } else {
+      // MSSQL syntax
+      return `
+        WITH group_groups AS (
+          SELECT 
+            id, 
+            "parentId", 
+            name 
+          FROM 
+            "${tableName}"
+          ${id ? `WHERE id = '${id}'` : ''}
+          UNION ALL
+          SELECT 
+            r.id, 
+            r."parentId", 
+            r.name 
+          FROM 
+            "${tableName}" r 
+            INNER JOIN group_groups g ON g.id = r."parentId"
+        ) 
+        SELECT * FROM group_groups;`;
+    }
+  }
+
   /* The `WriteHelper` class in TypeScript provides methods for creating, updating, and upserting data
 with optional auditing functionality. */
   /**
@@ -61,24 +121,8 @@ with optional auditing functionality. */
     entityName: string,
     include?: Include,
   ): Promise<Entity[]> {
-    const entities = await tx.$queryRawUnsafe<TEntityTree[]>(`
-        WITH RECURSIVE group_groups AS (
-          SELECT 
-            id, 
-            "parentId", 
-            name 
-          FROM 
-            "${tableName}"
-          UNION 
-          SELECT 
-            r.id, 
-            r."parentId", 
-            r.name 
-          FROM 
-            "${tableName}" r 
-            INNER JOIN group_groups g ON g.id = r."parentId"
-        ) 
-        SELECT * FROM group_groups;`);
+    const query = await this.getRecursiveQuery(tx, tableName);
+    const entities = await tx.$queryRawUnsafe<TEntityTree[]>(query);
 
     const data: Entity[] = await this.queryManyToDB(
       entities,
@@ -111,26 +155,8 @@ with optional auditing functionality. */
     entityName: string,
     include?: Include,
   ): Promise<Entity | undefined> {
-    const entities = await tx.$queryRawUnsafe<TEntityTree[]>(`
-        WITH RECURSIVE group_groups AS (
-          SELECT 
-            id, 
-            "parentId", 
-            name 
-          FROM 
-            "${tableName}"
-          WHERE
-            id = '${id}'
-          UNION 
-          SELECT 
-            r.id, 
-            r."parentId", 
-            r.name 
-          FROM 
-            "${tableName}" r 
-            INNER JOIN group_groups g ON g.id = r."parentId"
-        ) 
-        SELECT * FROM group_groups;`);
+    const query = await this.getRecursiveQuery(tx, tableName, id);
+    const entities = await tx.$queryRawUnsafe<TEntityTree[]>(query);
 
     const data: Entity[] = await this.queryManyToDB(
       entities,
@@ -161,24 +187,8 @@ with optional auditing functionality. */
     entityName: string,
     include?: Include,
   ): Promise<Entity[]> {
-    const entities = await tx.$queryRawUnsafe<TEntityTree[]>(`
-        WITH RECURSIVE group_groups AS (
-          SELECT 
-            id, 
-            "parentId", 
-            name 
-          FROM 
-            "${tableName}"
-          UNION 
-          SELECT 
-            r.id, 
-            r."parentId", 
-            r.name 
-          FROM 
-            "${tableName}" r 
-            INNER JOIN group_groups g ON g.id = r."parentId"
-        ) 
-        SELECT * FROM group_groups;`);
+    const query = await this.getRecursiveQuery(tx, tableName);
+    const entities = await tx.$queryRawUnsafe<TEntityTree[]>(query);
 
     const data: Entity[] = await this.queryManyToDB(
       entities,
