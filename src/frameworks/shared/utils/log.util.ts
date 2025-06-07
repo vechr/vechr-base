@@ -42,23 +42,27 @@ const lokiTransport = new LokiTransport({
   format: winstonFormat,
 });
 
+// Create transports array conditionally
+const createTransports = (): winston.transport[] => {
+  const transportsArray: winston.transport[] = [consoleTransport];
+
+  // Add Loki Logging only if host is configured
+  if (baseConfig.logging.loki.host !== '') {
+    transportsArray.push(lokiTransport);
+  }
+
+  return transportsArray;
+};
+
 export const winstonModuleOptions: WinstonModuleOptions = {
   levels: winston.config.npm.levels,
-  transports: [
-    consoleTransport,
-    // Add Loki Logging
-    lokiTransport,
-  ],
+  transports: createTransports(),
 };
 
 export const log = winston.createLogger(winstonModuleOptions);
 
 export const winstonExpressOptions: expressWinston.LoggerOptions = {
-  transports: [
-    consoleTransport,
-    // Add Loki Logging
-    lokiTransport,
-  ],
+  transports: createTransports(),
   statusLevels: false,
   format: winstonFormat,
   level: function (_, res, err) {

@@ -9,10 +9,12 @@ dotenv.config();
 
 const config: BaseConfig = {
   app: {
+    // Optional
     port: env.get('APP_PORT').default(3000).asInt(),
-    name: env.get('APP_NAME').default('things-service').asString(),
+    name: env.get('APP_NAME').default('vechr-service').asString(),
   },
   cookie: {
+    // Optional
     sameSite: env.get('COOKIE_SAME_SITE').default('strict').asString() as
       | 'lax'
       | 'strict'
@@ -21,13 +23,15 @@ const config: BaseConfig = {
     httpOnly: env.get('COOKIE_HTTP_ONLY').default('true').asBoolStrict(),
   },
   nats: {
-    url: env.get('NATS_URL').required().asString(),
+    // Optional
+    url: env.get('NATS_URL').default('nats://localhost:4222').asString(),
     service: 'NATS_SERVICE',
-    ca: env.get('NATS_CA').required().asString(),
-    key: env.get('NATS_KEY').required().asString(),
-    cert: env.get('NATS_CERT').required().asString(),
+    ca: env.get('NATS_CA').default('').asString(),
+    key: env.get('NATS_KEY').default('').asString(),
+    cert: env.get('NATS_CERT').default('').asString(),
   },
   jwt: {
+    // Optional
     secret: env.get('JWT_SECRET').default('secretvechr').asString(),
     expiresIn: env.get('JWT_EXPIRES_IN').default('3d').asString(),
     refreshExpiresIn: env
@@ -36,6 +40,7 @@ const config: BaseConfig = {
       .asString(),
   },
   encryption: {
+    // Optional
     secret: env.get('ECRYPTED_SECRET').default('usersecret').asString(),
   },
   audit: {
@@ -47,35 +52,45 @@ const config: BaseConfig = {
     },
   },
   logging: {
+    // Optional
     loki: {
-      host: env.get('LOKI_HOST').required().asString(),
+      host: env.get('LOKI_HOST').default('').asString(),
       username: env.get('LOKI_USERNAME').default('').asString(),
       password: env.get('LOKI_PASSWORD').default('').asString(),
     },
   },
   tracing: {
+    // Optional
     otlpHttpUrl: env.get('OTLP_HTTP_URL').asString(),
   },
   cache: {
+    // Optional
     redis: {
       url: env.get('REDIS_URL').asString(),
       ttl: env.get('REDIS_TTL').default(300).asInt(),
     },
   },
   subject: {
-    level1_company: env.get('LEVEL1_COMPANY').required().asString(),
-    level2_facility: env.get('LEVEL2_FACILITY').required().asString(),
+    // Optional
+    level1_company: env.get('LEVEL1_COMPANY').default('vechr').asString(),
+    level2_facility: env.get('LEVEL2_FACILITY').default('idn').asString(),
     level3_productionLine: env
       .get('LEVEL3_PRODUCTION_LINE')
-      .required()
+      .default('line_1')
       .asString(),
-    level4_environment: env.get('LEVEL4_ENVIRONMENT').required().asString(),
+    level4_environment: env
+      .get('LEVEL4_ENVIRONMENT')
+      .default('production')
+      .asString(),
     level5_serviceCategory: env
       .get('LEVEL5_SERVICE_CATEGORY')
-      .required()
+      .default('service')
       .asString(),
-    level6_serviceName: env.get('LEVEL6_SERVICE_NAME').required().asString(),
-    level9_instanceId: env.get('LEVEL9_INSTANCE_ID').required().asString(),
+    level6_serviceName: env
+      .get('LEVEL6_SERVICE_NAME')
+      .default('vechr_service')
+      .asString(),
+    level9_instanceId: env.get('LEVEL9_INSTANCE_ID').default('s1').asString(),
   },
 };
 
